@@ -112,14 +112,9 @@
                 return;
             }
             const { error } = await sb.auth.resetPasswordForEmail(email, {
-                redirectTo: window.location.origin + '/admin-login.html'
+                redirectTo: new URL('admin-login.html', window.location.href).href
             });
             if (!error) {
                 alert('Password reset email sent! Check your inbox.\nPassword reset email moklayu!');
             } else {
-                alert('Could not send. Check your email address.');
-            }
-        }
-    </script>
-</body>
-</html>
+                ale
