@@ -359,10 +359,14 @@
 
   function renderCats(cats) {
     document.getElementById('cat-grid').innerHTML = cats.map(c =>
-      '<div class="cat-tile" onclick="location.href=\'products.html?cat=' + c.id + '\'">'
+      '<div class="cat-tile" data-cat="' + c.id + '">'
       + '<div class="cat-icon">' + (c.icon||'&#x1F4E6;') + '</div>'
       + '<div class="cat-name">' + c.name_en + '</div></div>'
     ).join('');
+    document.getElementById('cat-grid').addEventListener('click', function(e) {
+      var t = e.target.closest('.cat-tile');
+      if (t) location.href = 'products.html?cat=' + t.getAttribute('data-cat');
+    });
   }
 
   function renderProds(prods) {
