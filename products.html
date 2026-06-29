@@ -129,7 +129,7 @@
     <a href="index.html">
       <div class="logo-text">
         <div class="store-name">&#x1F3EA; Azad Provision Store</div>
-        <div class="store-gu">&#xA86D;&#xAB5B;&#xA86A; &#xA92B;&#xACD;&#xA930;&#xACB;&#xA935;&#xABF;&#xAD1D;&#xA928; &#xA938;&#xACD;&#xA9F5;&#xABE;&#xA930;</div>
+        <div class="store-gu">આઝાદ પ્રોવિઝન સ્ટોર</div>
       </div>
     </a>
     <div class="search-bar">
@@ -288,7 +288,7 @@
     const counts = {};
     allProducts.forEach(p => { counts[p.category_id] = (counts[p.category_id]||0)+1; });
     document.getElementById('cat-list').innerHTML =
-      '<li><a href="#" class="' + (activeCatId==='all'?'active':'') + '" onclick="selectCat('all');return false;"><span>&#x1F3EA; All</span><span class="cat-count">' + allProducts.length + '</span></a></li>' +
+      '<li><a href="#" class="' + (activeCatId==='all'?'active':'') + '" onclick="selectCat(\'all\');return false;"><span>&#x1F3EA; All</span><span class="cat-count">' + allProducts.length + '</span></a></li>' +
       allCategories.filter(c => counts[c.id]).map(c =>
         '<li><a href="#" class="' + (activeCatId===c.id?'active':'') + '" onclick="selectCat(\'' + c.id + '\');return false;"><span>' + (c.icon||'') + ' ' + c.name_en + '</span><span class="cat-count">' + (counts[c.id]||0) + '</span></a></li>'
       ).join('');
@@ -315,7 +315,7 @@
     bar.innerHTML = '';
     if (activeCatId !== 'all') {
       const cat = allCategories.find(c => c.id===activeCatId);
-      if (cat) bar.innerHTML += '<span class="filter-tag">' + cat.name_en + ' <span class="remove" onclick="selectCat('all')">&#x2715;</span></span>';
+      if (cat) bar.innerHTML += '<span class="filter-tag">' + cat.name_en + ' <span class="remove" onclick="selectCat(\'all\')">&#x2715;</span></span>';
     }
   }
 
