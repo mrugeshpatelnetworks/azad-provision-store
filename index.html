@@ -317,6 +317,14 @@
   <i class="fab fa-whatsapp"></i>
 </button>
 <script>
+  // Forward Supabase auth tokens (invite/recovery/magic) to admin-login.html
+  (function(){
+    var h = window.location.hash;
+    if (h && (h.includes('access_token=') || h.includes('error='))) {
+      window.location.replace('admin-login.html' + h);
+    }
+  })();
+
   function subscribeWA() { const n = document.getElementById('wa-sub-num').value.trim(); if (!n) { alert('Please enter your number'); return; } openWhatsApp('Hello! I want to join the weekly offers WhatsApp group. My number: ' + n); }
 
   const SAMPLE_CATS = [
