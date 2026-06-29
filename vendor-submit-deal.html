@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <title>Submit Deal — Vendor Portal</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+  <script>window.REQUIRED_ROLE = 'vendor';</script>
+  <script src="auth-guard.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Mukta', sans-serif;
+      background: #eef2f5;
+      min-height: 100vh;
+      padding-bottom: 100px;
+    }
+
+    .topbar {
+      background: #3f51b5;
+      color: white;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .back-btn { font-size: 24px; cursor: pointer; background: none; border: none; color: white; }
+    .topbar-title { font-size: 18px; font-weight: 700; }
+
+    .form-section {
+      background: white;
+      padding: 20px;
+      margin-bottom: 10px;
+    }
+
+    .section-title { font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 14px; }
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 6px;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 16px;
+      border: 2px solid #e5e5e5;
+      border-radius: 12px;
+      outline: none;
+      margin-bottom: 16px;
+      font-family: inherit;
+    }
+
+    input:focus, textarea:focus { border-color: #3f51b5; }
+    textarea { min-height: 80px; resize: vertical; }
+
+    .price-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .price-row input { margin-bottom: 0; }
+
+    .date-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .date-row input { margin-bottom: 0; }
+
+    .photo-upload-area {
+      width: 100%;
+      height: 150px;
+      border: 3px dashed #a855f7;
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      background: #faf5ff;
+      overflow: hidden;
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .photo-upload-area img {
+      width: 100%; height: 100%; object-fit: cover;
+      position: absolute; top:0; left:0; border-radius:11px;
+    }
+
+    .upload-icon { font-size: 40px; }
+    .upload-text { font-size: 14px; font-weight: 600; color: #3f51b5; margin-top: 6px; }
+    #deal-photo-input { display: none; }
+
+    .btn-submit {
+      width: calc(100% - 40px);
+      margin: 0 20px;
+      padding: 20px;
+      background: #3f51b5;
+      color: white;
+      border: none;
+      border-radius: 16px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-submit:disabled { background: #ccc; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <button class="back-btn" onclick="history.back()">←</button>
+    <div class="topbar-title">➕ Submit New Deal</div>
+  </div>
+
+  <!-- Deal image -->
+  <div class="form-section">
+    <div class="section-title">📸 Deal Image (Optional)</div>
+    <div class="photo-upload-area" onclick="document.getElementById('deal-photo-input').click()">
+      <div class="upload-icon">🖼️</div>
+      <div class="upload-text">Tap to upload deal image</div>
+      <img id="deal-preview" src="" style="display:none" alt="" />
+    </div>
+    <input type="file" id="deal-photo-input" accept="image/*" onchange="previewDealPhoto(this)" />
+  </div>
+
+  <!-- Deal details -->
+  <div class="form-section">
+    <div class="section-title">📋 Deal Details</div>
+
+    <label>Deal Title *</label>
+    <input type="text" id="deal-title" placeholder="e.g. Amul Butter 10% off this week" required />
+
+    <label>Products Covered</label>
+    <input type="text" id="products-covered" placeholder="e.g. All dairy products, Amul range" />
+
+    <label>Notes for Store Owner</label>
+    <textarea id="notes" placeholder="Any special instructions or context for Azad store owner..."></textarea>
+  </div>
+
+  <!-- Pricing -->
+  <div class="form-section">
+    <div class="section-title">💰 Pricing (Optional)</div>
+    <div class="price-row">
+      <div>
+        <label>Original MRP (₹)</label>
+        <input type="number" id="original-price" placeholder="100" min="0" step="0.50" />
+      </div>
+      <div>
+        <label>Offer Price (₹)</label>
+        <input type="number" id="offer-price" placeholder="90" min="0" step="0.50" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Validity -->
+  <div class="form-section">
+    <div class="section-title">📅 Offer Valid</div>
+    <div class="date-row">
+      <div>
+        <label>From</label>
+        <input type="date" id="valid-from" />
+      </div>
+      <div>
+        <label>Until</label>
+        <input type="date" id="valid-until" />
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-submit" id="btn-submit" onclick="submitDeal()">
+    📤 Submit Deal for Approval
+  </button>
+
+  <script>
+    // Set default "valid from" to today
+    document.getElementById('valid-from').value = new Date().toISOString().split('T')[0];
+
+    function previewDealPhoto(input) {
+      if (!input.files?.[0]) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = document.getElementById('deal-preview');
+        img.src = e.target.result;
+        img.style.display = 'block';
+        document.querySelectorAll('.upload-icon, .upload-text').forEach(el => el.style.display = 'none');
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+
+    async function submitDeal() {
+      const title = document.getElementById('deal-title').value.trim();
+      if (!title) {
+        showToast('Please enter a deal title.', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('btn-submit');
+      btn.disabled = true;
+      btn.textContent = 'Submitting...';
+
+      const { data: { session } } = await sb.auth.getSession();
+      let imageUrl = null;
+
+      // Upload image if any
+      const photoInput = document.getElementById('deal-photo-input');
+      if (photoInput.files?.[0]) {
+        const file = photoInput.files[0];
+        const fileName = `deal_${Date.now()}.${file.name.split('.').pop()}`;
+        const { data: uploadData, error: uploadErr } = await sb.storage
+          .from('deal-images')
+          .upload(fileName, file, { upsert: true });
+        if (!uploadErr) imageUrl = fileName;
+      }
+
+      const { error } = await sb.from('vendor_submissions').insert({
+        vendor_id: session.user.id,
+        vendor_name: session.user.user_metadata?.full_name || session.user.email,
+        deal_title: title,
+        products_covered: document.getElementById('products-covered').value.trim() || null,
+        image_url: imageUrl,
+        original_price: parseFloat(document.getElementById('original-price').value) || null,
+        offer_price: parseFloat(document.getElementById('offer-price').value) || null,
+        valid_from: document.getElementById('valid-from').value || null,
+        valid_until: document.getElementById('valid-until').value || null,
+        notes: document.getElementById('notes').value.trim() || null,
+        status: 'pending',
+      });
+
+      if (error) {
+        showToast('Could not submit deal. Please try again.', 'error');
+        btn.disabled = false;
+        btn.textContent = '📤 Submit Deal for Approval';
+        return;
+      }
+
+      showToast('✅ Deal submitted! Waiting for store approval.');
+      setTimeout(() => window.location.href = 'vendor-dashboard.html', 1600);
+    }
+  </script>
+</body>
+</html>

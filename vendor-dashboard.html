@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <title>Vendor Dashboard — Azad Store</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+  <script>window.REQUIRED_ROLE = 'vendor';</script>
+  <script src="auth-guard.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Mukta', sans-serif;
+      background: #eef2f5;
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    .topbar {
+      background: #3f51b5;
+      color: white;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .topbar-title { font-size: 18px; font-weight: 700; }
+    .topbar-sub { font-size: 12px; opacity: .85; }
+
+    .btn-logout {
+      background: rgba(255,255,255,.2);
+      border: none;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .welcome-bar {
+      background: white;
+      padding: 18px 20px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .welcome-name { font-size: 18px; font-weight: 700; }
+    .welcome-sub { font-size: 13px; color: #888; margin-top: 3px; }
+
+    .btn-submit {
+      display: block;
+      margin: 20px 16px;
+      padding: 20px;
+      background: #3f51b5;
+      color: white;
+      border: none;
+      border-radius: 16px;
+      font-size: 18px;
+      font-weight: 700;
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .section-title {
+      padding: 16px 20px 8px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    .deal-card {
+      background: white;
+      margin: 0 16px 12px;
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    }
+
+    .deal-title { font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 6px; }
+    .deal-meta { font-size: 13px; color: #666; margin-bottom: 4px; }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-top: 8px;
+    }
+
+    .status-pending  { background: #fef3c7; color: #92400e; }
+    .status-approved { background: #d1fae5; color: #065f46; }
+    .status-rejected { background: #fee2e2; color: #991b1b; }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 20px;
+      color: #aaa;
+      font-size: 15px;
+    }
+
+    .empty-icon { font-size: 52px; margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">🤝 Vendor Portal</div>
+      <div class="topbar-sub" id="user-name">Welcome</div>
+    </div>
+    <button class="btn-logout" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="welcome-bar">
+    <div class="welcome-name">Hello, <span id="vendor-name">Vendor</span>!</div>
+    <div class="welcome-sub">Post deals to pass on to Azad Provision Store customers</div>
+  </div>
+
+  <a href="vendor-submit-deal.html" class="btn-submit">
+    ➕ Submit New Deal / Offer
+  </a>
+
+  <div class="section-title">My Submitted Deals</div>
+  <div id="deals-list">
+    <div class="empty-state"><div class="empty-icon">⏳</div>Loading your deals...</div>
+  </div>
+
+  <script>
+    async function loadMyDeals() {
+      const { data: { session } } = await sb.auth.getSession();
+      const vendorName = session?.user?.user_metadata?.full_name || session?.user?.email || 'Vendor';
+      document.getElementById('vendor-name').textContent = vendorName;
+
+      const { data, error } = await sb
+        .from('vendor_submissions')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      const list = document.getElementById('deals-list');
+
+      if (error || !data?.length) {
+        list.innerHTML = `<div class="empty-state">
+          <div class="empty-icon">📭</div>
+          You haven't submitted any deals yet.<br>
+          Tap "Submit New Deal" above to get started!
+        </div>`;
+        return;
+      }
+
+      list.innerHTML = data.map(item => `
+        <div class="deal-card">
+          <div class="deal-title">${item.deal_title}</div>
+          ${item.products_covered ? `<div class="deal-meta">Products: ${item.products_covered}</div>` : ''}
+          ${item.offer_price ? `<div class="deal-meta">Offer Price: ${formatPrice(item.offer_price)}</div>` : ''}
+          ${item.valid_from || item.valid_until ? `<div class="deal-meta">📅 ${item.valid_from || '—'} to ${item.valid_until || '—'}</div>` : ''}
+          <div>
+            <span class="status-badge status-${item.status}">
+              ${item.status === 'pending'  ? '⏳ Waiting for store approval' :
+                item.status === 'approved' ? '✅ Live on customer site!' :
+                                            '❌ Not approved' + (item.rejection_reason ? ` — ${item.rejection_reason}` : '')}
+            </span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    loadMyDeals();
+  </script>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <title>Vendor Login — Azad Provision Store</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Mukta', sans-serif;
+      background: #f0f4ff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .login-card {
+      background: white;
+      border-radius: 20px;
+      padding: 40px 32px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.1);
+      text-align: center;
+    }
+
+    .store-icon { font-size: 56px; margin-bottom: 10px; }
+    .store-name { font-size: 20px; font-weight: 700; color: #1a1a1a; }
+    .login-label {
+      font-size: 13px;
+      color: #3f51b5;
+      font-weight: 700;
+      background: #e8eaf6;
+      padding: 6px 16px;
+      border-radius: 20px;
+      display: inline-block;
+      margin: 10px 0 28px;
+    }
+
+    label {
+      display: block;
+      text-align: left;
+      font-size: 15px;
+      font-weight: 600;
+      color: #444;
+      margin-bottom: 8px;
+    }
+
+    input {
+      width: 100%;
+      padding: 16px;
+      font-size: 17px;
+      border: 2px solid #e5e5e5;
+      border-radius: 12px;
+      outline: none;
+      margin-bottom: 18px;
+    }
+
+    input:focus { border-color: #3f51b5; }
+
+    .btn-login {
+      width: 100%;
+      padding: 18px;
+      background: #3f51b5;
+      color: white;
+      border: none;
+      border-radius: 14px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-login:disabled { background: #ccc; cursor: not-allowed; }
+
+    .error-msg {
+      background: #fee2e2;
+      color: #dc2626;
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 14px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .note {
+      margin-top: 24px;
+      font-size: 12px;
+      color: #bbb;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <div class="store-icon">🏭</div>
+    <div class="store-name">Vendor Portal</div>
+    <div class="login-label">🤝 Supplier / Vendor Login</div>
+
+    <div class="note" style="margin-bottom:20px;color:#888;font-size:13px">
+      Post your deals for Azad Provision Store
+    </div>
+
+    <div id="error-msg" class="error-msg"></div>
+
+    <form id="login-form">
+      <label for="email">Business Email</label>
+      <input type="email" id="email" placeholder="vendor@yourcompany.com" required />
+
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="••••••••" required />
+
+      <button type="submit" class="btn-login" id="btn-login">Login →</button>
+    </form>
+
+    <div class="note">
+      Don't have an account? Contact Azad Provision Store to get access.<br>
+      Contact: <strong>+91 98765 43210</strong>
+    </div>
+  </div>
+
+  <script>
+    // Already logged in?
+    (async () => {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session?.user?.user_metadata?.role === 'vendor') {
+        window.location.href = 'vendor-dashboard.html';
+      }
+    })();
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btn-login');
+      const errEl = document.getElementById('error-msg');
+      errEl.style.display = 'none';
+      btn.disabled = true;
+      btn.textContent = 'Logging in...';
+
+      const { data, error } = await sb.auth.signInWithPassword({
+        email: document.getElementById('email').value.trim(),
+        password: document.getElementById('password').value,
+      });
+
+      if (error || data.user?.user_metadata?.role !== 'vendor') {
+        if (data?.user) await sb.auth.signOut();
+        errEl.textContent = 'Wrong email or password. Please try again.';
+        errEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Login →';
+        return;
+      }
+
+      window.location.href = 'vendor-dashboard.html';
+    });
+  </script>
+</body>
+</html>

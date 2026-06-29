@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <title>Vendor Offers — Azad Store</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+  <script>window.REQUIRED_ROLE = 'admin';</script>
+  <script src="auth-guard.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Mukta', sans-serif;
+      background: #FFF8E1;
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    .topbar {
+      background: #E65100;
+      color: white;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .back-btn { font-size: 24px; cursor: pointer; background: none; border: none; color: white; }
+    .topbar-title { font-size: 18px; font-weight: 700; }
+    .topbar-sub { font-size: 12px; opacity: .8; }
+
+    .section-header {
+      padding: 16px 20px 8px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    .offer-card {
+      background: white;
+      margin: 0 16px 12px;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,.07);
+    }
+
+    .offer-img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      background: #f0f0f0;
+    }
+
+    .offer-body { padding: 14px 16px; }
+
+    .offer-vendor {
+      font-size: 12px;
+      color: #1976d2;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: 4px;
+    }
+
+    .offer-title { font-size: 17px; font-weight: 700; color: #1a1a1a; margin-bottom: 6px; }
+
+    .offer-meta {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+
+    .offer-dates {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 12px;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .status-pending  { background: #fef3c7; color: #92400e; }
+    .status-approved { background: #d1fae5; color: #065f46; }
+    .status-rejected { background: #fee2e2; color: #991b1b; }
+
+    .action-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-approve {
+      flex: 1;
+      padding: 14px;
+      background: #2E7D32;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-reject {
+      flex: 1;
+      padding: 14px;
+      background: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-deactivate {
+      flex: 1;
+      padding: 14px;
+      background: #f3f4f6;
+      color: #374151;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #888;
+      font-size: 16px;
+    }
+
+    .empty-icon { font-size: 56px; margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <button class="back-btn" onclick="history.back()">←</button>
+    <div>
+      <div class="topbar-title">🤝 Vendor Offers</div>
+      <div class="topbar-sub">વેન્ડર ઑફર્સ — Approve or Reject</div>
+    </div>
+  </div>
+
+  <!-- Pending -->
+  <div class="section-header">⏳ Waiting for your approval / તમારી મંજૂરી જોઈએ</div>
+  <div id="pending-list">
+    <div class="empty-state"><div class="empty-icon">⏳</div>Loading...</div>
+  </div>
+
+  <!-- Approved -->
+  <div class="section-header">✅ Already approved / મંજૂર થઈ ગઈ</div>
+  <div id="approved-list">
+    <div class="empty-state"><div class="empty-icon">✅</div>Loading...</div>
+  </div>
+
+  <script>
+    async function loadSubmissions() {
+      const { data, error } = await sb
+        .from('vendor_submissions')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error || !data) return;
+
+      const pending  = data.filter(d => d.status === 'pending');
+      const approved = data.filter(d => d.status === 'approved');
+
+      renderList('pending-list', pending, true);
+      renderList('approved-list', approved, false);
+    }
+
+    function renderList(containerId, items, isPending) {
+      const el = document.getElementById(containerId);
+      if (!items.length) {
+        el.innerHTML = `<div class="empty-state"><div class="empty-icon">${isPending ? '🎉' : '📭'}</div>
+          ${isPending ? 'No pending offers right now! / કોઈ ઑફર નથી' : 'No approved offers yet. / હજી કોઈ મંજૂર નથી'}</div>`;
+        return;
+      }
+
+      el.innerHTML = items.map(item => `
+        <div class="offer-card" id="card-${item.id}">
+          ${item.image_url
+            ? `<img class="offer-img" src="${getImageUrl(item.image_url, 'deal-images')}" alt="${item.deal_title}" />`
+            : ''}
+          <div class="offer-body">
+            <div class="offer-vendor">🏭 ${item.vendor_name || 'Vendor'}</div>
+            <div class="offer-title">${item.deal_title}</div>
+            ${item.products_covered ? `<div class="offer-meta">Products: ${item.products_covered}</div>` : ''}
+            ${item.offer_price ? `<div class="offer-meta">Offer Price: ${formatPrice(item.offer_price)}${item.original_price ? ` (was ${formatPrice(item.original_price)})` : ''}</div>` : ''}
+            ${item.valid_from || item.valid_until ? `<div class="offer-dates">📅 ${item.valid_from || '—'} to ${item.valid_until || '—'}</div>` : ''}
+            ${item.notes ? `<div class="offer-meta" style="font-style:italic;color:#999">"${item.notes}"</div>` : ''}
+            <br>
+            <span class="status-badge status-${item.status}">${
+              item.status === 'pending' ? '⏳ Waiting' :
+              item.status === 'approved' ? '✅ Approved' : '❌ Rejected'
+            }</span>
+            <div class="action-row">
+              ${isPending ? `
+                <button class="btn-approve" onclick="approveOffer('${item.id}')">✅ Approve</button>
+                <button class="btn-reject" onclick="rejectOffer('${item.id}')">❌ Reject</button>
+              ` : `
+                <button class="btn-deactivate" onclick="deactivateOffer('${item.id}')">🚫 Deactivate</button>
+              `}
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function approveOffer(id) {
+      const confirmed = confirm('Approve this vendor offer and show it to customers?\n\nઆ ઑફર ગ્રાહકોને બતાવવી?');
+      if (!confirmed) return;
+
+      // Update status
+      const { error: err1 } = await sb
+        .from('vendor_submissions')
+        .update({ status: 'approved', reviewed_at: new Date().toISOString() })
+        .eq('id', id);
+
+      if (err1) { showToast('Could not approve. Try again.', 'error'); return; }
+
+      // Fetch the submission and create a deal from it
+      const { data: sub } = await sb.from('vendor_submissions').select('*').eq('id', id).single();
+      if (sub) {
+        await sb.from('deals').insert({
+          title_en: sub.deal_title,
+          image_url: sub.image_url,
+          original_price: sub.original_price,
+          deal_price: sub.offer_price,
+          show_price: true,
+          valid_from: sub.valid_from,
+          valid_until: sub.valid_until,
+          description: sub.products_covered,
+          is_active: true,
+          source: 'vendor',
+          vendor_id: sub.vendor_id,
+        });
+      }
+
+      showToast('✅ Offer approved! Now live for customers.');
+      setTimeout(loadSubmissions, 1000);
+    }
+
+    async function rejectOffer(id) {
+      const reason = prompt('Why are you rejecting this offer? (Optional — vendor will see this)\n\nકારણ? (ઐચ્છિક)');
+      const { error } = await sb
+        .from('vendor_submissions')
+        .update({
+          status: 'rejected',
+          rejection_reason: reason || null,
+          reviewed_at: new Date().toISOString()
+        })
+        .eq('id', id);
+
+      if (error) { showToast('Could not reject. Try again.', 'error'); return; }
+      showToast('Offer rejected.');
+      setTimeout(loadSubmissions, 1000);
+    }
+
+    async function deactivateOffer(id) {
+      const confirmed = confirm('Remove this offer from the customer site?\n\nગ્રાહક સાઇટ પરથી ઑફર હટાવવી?');
+      if (!confirmed) return;
+
+      // Find the matching deal and deactivate it
+      const { data: sub } = await sb.from('vendor_submissions').select('*').eq('id', id).single();
+      if (sub) {
+        await sb.from('deals')
+          .update({ is_active: false })
+          .eq('source', 'vendor')
+          .eq('vendor_id', sub.vendor_id)
+          .eq('title_en', sub.deal_title);
+      }
+
+      showToast('Offer deactivated from customer site.');
+      setTimeout(loadSubmissions, 1000);
+    }
+
+    loadSubmissions();
+  </script>
+</body>
+</html>

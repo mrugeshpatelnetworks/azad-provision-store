@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <title>Deals & Offers — Azad Store</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+  <script>window.REQUIRED_ROLE = 'admin';</script>
+  <script src="auth-guard.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Mukta', sans-serif;
+      background: #FFF8E1;
+      min-height: 100vh;
+      padding-bottom: 100px;
+    }
+
+    .topbar {
+      background: #f59e0b;
+      color: white;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .back-btn { font-size: 24px; background: none; border: none; color: white; cursor: pointer; }
+    .topbar-title { font-size: 18px; font-weight: 700; }
+    .topbar-sub { font-size: 12px; opacity: .85; }
+
+    .deal-card {
+      background: white;
+      margin: 12px 16px 0;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,.07);
+    }
+
+    .deal-img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      background: #fef3c7;
+    }
+
+    .deal-body { padding: 14px 16px; }
+    .deal-title { font-size: 17px; font-weight: 700; color: #1a1a1a; margin-bottom: 6px; }
+    .deal-meta { font-size: 13px; color: #666; margin-bottom: 3px; }
+    .deal-status {
+      display: inline-block;
+      margin: 8px 0;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .status-active   { background: #d1fae5; color: #065f46; }
+    .status-inactive { background: #fee2e2; color: #991b1b; }
+    .status-expired  { background: #f3f4f6; color: #6b7280; }
+
+    .deal-actions { display: flex; gap: 10px; margin-top: 10px; }
+
+    .btn-toggle, .btn-delete-deal {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-toggle   { background: #eff6ff; color: #1d4ed8; }
+    .btn-delete-deal { background: #fef2f2; color: #dc2626; }
+
+    /* Add deal form (collapsible) */
+    .add-form-toggle {
+      display: block;
+      margin: 16px;
+      padding: 16px;
+      background: #f59e0b;
+      color: white;
+      border: none;
+      border-radius: 14px;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .add-form {
+      background: white;
+      margin: 0 16px 16px;
+      border-radius: 16px;
+      padding: 20px;
+      display: none;
+    }
+
+    .add-form.open { display: block; }
+
+    .add-form label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 6px;
+    }
+
+    .add-form input, .add-form textarea {
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 16px;
+      border: 2px solid #e5e5e5;
+      border-radius: 12px;
+      outline: none;
+      margin-bottom: 14px;
+      font-family: inherit;
+    }
+
+    .add-form input:focus, .add-form textarea:focus { border-color: #f59e0b; }
+
+    .date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .date-row input { margin-bottom: 0; }
+
+    .btn-save-deal {
+      width: 100%;
+      padding: 16px;
+      background: #2E7D32;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    .btn-save-deal:disabled { background: #ccc; cursor: not-allowed; }
+
+    .section-header {
+      padding: 16px 20px 4px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #888;
+      text-transform: uppercase;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 20px;
+      color: #aaa;
+    }
+
+    .empty-icon { font-size: 52px; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <button class="back-btn" onclick="history.back()">←</button>
+    <div>
+      <div class="topbar-title">🏷️ Deals & Offers</div>
+      <div class="topbar-sub">ઑફર્સ મૅનૅજ કરો</div>
+    </div>
+  </div>
+
+  <!-- Add New Deal -->
+  <button class="add-form-toggle" onclick="toggleForm()">➕ Add New Deal / નવી ઑફર ઉમેરો</button>
+
+  <div class="add-form" id="add-form">
+    <label>Deal Title *</label>
+    <input type="text" id="new-title" placeholder="e.g. 20% off on all Maggi products" />
+
+    <label>Gujarati Title (optional)</label>
+    <input type="text" id="new-title-gu" placeholder="e.g. ૨૦% ની છૂટ" />
+
+    <label>Deal Price (₹)</label>
+    <input type="number" id="new-deal-price" placeholder="90" min="0" step="0.50" />
+
+    <label>Original Price (₹)</label>
+    <input type="number" id="new-original-price" placeholder="100" min="0" step="0.50" />
+
+    <label>Description</label>
+    <textarea id="new-description" placeholder="Details about this deal..."></textarea>
+
+    <label>Valid Period</label>
+    <div class="date-row">
+      <input type="date" id="new-valid-from" />
+      <input type="date" id="new-valid-until" />
+    </div>
+    <br>
+
+    <button class="btn-save-deal" id="btn-save-deal" onclick="saveDeal()">
+      ✅ Save Deal
+    </button>
+  </div>
+
+  <!-- Existing deals -->
+  <div class="section-header">Your Active Deals</div>
+  <div id="deals-list">
+    <div class="empty-state"><div class="empty-icon">⏳</div>Loading deals...</div>
+  </div>
+
+  <script>
+    let dealsData = [];
+
+    function toggleForm() {
+      const form = document.getElementById('add-form');
+      form.classList.toggle('open');
+    }
+
+    // Set default date to today
+    document.getElementById('new-valid-from').value = new Date().toISOString().split('T')[0];
+
+    async function loadDeals() {
+      const { data } = await sb
+        .from('deals')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      dealsData = data || [];
+      renderDeals();
+    }
+
+    function renderDeals() {
+      const list = document.getElementById('deals-list');
+      const today = new Date().toISOString().split('T')[0];
+
+      if (!dealsData.length) {
+        list.innerHTML = `<div class="empty-state">
+          <div class="empty-icon">🏷️</div>
+          No deals yet! Add one above.
+        </div>`;
+        return;
+      }
+
+      list.innerHTML = dealsData.map(deal => {
+        const isExpired = deal.valid_until && deal.valid_until < today;
+        const statusClass = !deal.is_active ? 'status-inactive' : isExpired ? 'status-expired' : 'status-active';
+        const statusText = !deal.is_active ? '🚫 Inactive' : isExpired ? '⏰ Expired' : '✅ Active';
+
+        return `
+        <div class="deal-card" id="deal-${deal.id}">
+          ${deal.image_url ? `<img class="deal-img" src="${getImageUrl(deal.image_url, 'deal-images')}" alt="${deal.title_en}" />` : ''}
+          <div class="deal-body">
+            <div class="deal-title">${deal.title_en}</div>
+            ${deal.deal_price ? `<div class="deal-meta">💰 Deal: ${formatPrice(deal.deal_price)}${deal.original_price ? ` (was ${formatPrice(deal.original_price)})` : ''}</div>` : ''}
+            ${deal.valid_from || deal.valid_until ? `<div class="deal-meta">📅 ${deal.valid_from || '—'} → ${deal.valid_until || 'No end date'}</div>` : ''}
+            ${deal.source === 'vendor' ? `<div class="deal-meta">🏭 From: Vendor</div>` : ''}
+            <span class="deal-status ${statusClass}">${statusText}</span>
+            <div class="deal-actions">
+              <button class="btn-toggle" onclick="toggleDeal('${deal.id}', ${deal.is_active})">
+                ${deal.is_active ? '🚫 Deactivate' : '✅ Activate'}
+              </button>
+              <button class="btn-delete-deal" onclick="deleteDeal('${deal.id}', '${deal.title_en.replace(/'/g, "\\'")}')">
+                🗑️ Delete
+              </button>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    async function toggleDeal(id, currentActive) {
+      const { error } = await sb.from('deals').update({ is_active: !currentActive }).eq('id', id);
+      if (error) { showToast('Could not update. Try again.', 'error'); return; }
+      showToast(currentActive ? 'Deal deactivated.' : 'Deal activated! ✅');
+      loadDeals();
+    }
+
+    async function deleteDeal(id, title) {
+      const confirmed = confirm(`Delete deal "${title}"?\n\nAre you sure? This cannot be undone.`);
+      if (!confirmed) return;
+      const { error } = await sb.from('deals').delete().eq('id', id);
+      if (error) { showToast('Could not delete. Try again.', 'error'); return; }
+      showToast(`Deal deleted.`);
+      loadDeals();
+    }
+
+    async function saveDeal() {
+      const title = document.getElementById('new-title').value.trim();
+      if (!title) { showToast('Please enter a deal title.', 'error'); return; }
+
+      const btn = document.getElementById('btn-save-deal');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      const { error } = await sb.from('deals').insert({
+        title_en: title,
+        title_gu: document.getElementById('new-title-gu').value.trim() || null,
+        deal_price: parseFloat(document.getElementById('new-deal-price').value) || null,
+        original_price: parseFloat(document.getElementById('new-original-price').value) || null,
+        description: document.getElementById('new-description').value.trim() || null,
+        valid_from: document.getElementById('new-valid-from').value || null,
+        valid_until: document.getElementById('new-valid-until').value || null,
+        show_price: true,
+        is_active: true,
+        source: 'admin',
+      });
+
+      if (error) {
+        showToast('Could not save deal. Try again.', 'error');
+        btn.disabled = false;
+        btn.textContent = '✅ Save Deal';
+        return;
+      }
+
+      showToast('✅ Deal added! Now live for customers.');
+      document.getElementById('add-form').classList.remove('open');
+      document.getElementById('new-title').value = '';
+      document.getElementById('new-title-gu').value = '';
+      document.getElementById('new-deal-price').value = '';
+      document.getElementById('new-original-price').value = '';
+      document.getElementById('new-description').value = '';
+      document.getElementById('new-valid-until').value = '';
+      btn.disabled = false;
+      btn.textContent = '✅ Save Deal';
+      loadDeals();
+    }
+
+    loadDeals();
+  </script>
+</body>
+</html>

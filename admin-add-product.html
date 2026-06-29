@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Add Product | Azad Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+  <script>window.REQUIRED_ROLE = 'admin';</script>
+  <script src="auth-guard.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Mukta', sans-serif;
+      background: #FFF8E1;
+      min-height: 100vh;
+      padding-bottom: 100px;
+    }
+
+    .topbar {
+      background: #f97316;
+      color: white;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .back-btn {
+      font-size: 24px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      color: white;
+    }
+
+    .topbar-title { font-size: 18px; font-weight: 700; }
+    .topbar-sub { font-size: 12px; opacity: .8; }
+
+    /* ── Photo Upload Area ── */
+    .photo-section {
+      padding: 20px;
+      background: white;
+      margin-bottom: 10px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 4px;
+    }
+
+    .section-sub {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 14px;
+    }
+
+    .photo-upload-area {
+      width: 100%;
+      height: 200px;
+      border: 3px dashed #f97316;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      background: #fff8f0;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .photo-upload-area img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      top: 0; left: 0;
+      border-radius: 13px;
+    }
+
+    .photo-upload-area .upload-icon { font-size: 52px; }
+    .photo-upload-area .upload-text {
+      font-size: 16px;
+      font-weight: 600;
+      color: #f97316;
+      margin-top: 8px;
+    }
+    .photo-upload-area .upload-sub {
+      font-size: 13px;
+      color: #888;
+      margin-top: 4px;
+    }
+
+    #photo-input { display: none; }
+
+    .change-photo-btn {
+      background: rgba(0,0,0,.55);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      display: none;
+    }
+
+    /* ── Form sections ── */
+    .form-section {
+      padding: 20px;
+      background: white;
+      margin-bottom: 10px;
+    }
+
+    label {
+      display: block;
+      font-size: 15px;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    label .gu { font-weight: 400; color: #888; font-size: 13px; margin-left: 4px; }
+
+    input[type="text"],
+    input[type="number"],
+    select {
+      width: 100%;
+      padding: 18px 16px;
+      font-size: 17px;
+      border: 2px solid #e5e5e5;
+      border-radius: 12px;
+      outline: none;
+      margin-bottom: 18px;
+      transition: border-color .2s;
+      background: white;
+      -webkit-appearance: none;
+    }
+
+    input:focus, select:focus { border-color: #f97316; }
+
+    /* ── Toggle switches ── */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .toggle-row:last-child { border-bottom: none; }
+
+    .toggle-label { }
+    .toggle-label .main { font-size: 16px; font-weight: 700; color: #1a1a1a; }
+    .toggle-label .sub { font-size: 13px; color: #888; margin-top: 2px; }
+
+    .toggle-switch {
+      position: relative;
+      width: 60px;
+      height: 32px;
+      flex-shrink: 0;
+    }
+
+    .toggle-switch input { display: none; }
+
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: #ccc;
+      border-radius: 32px;
+      cursor: pointer;
+      transition: background .2s;
+    }
+
+    .toggle-slider::after {
+      content: '';
+      position: absolute;
+      width: 26px;
+      height: 26px;
+      background: white;
+      border-radius: 50%;
+      top: 3px; left: 3px;
+      transition: transform .2s;
+      box-shadow: 0 2px 4px rgba(0,0,0,.2);
+    }
+
+    .toggle-switch input:checked + .toggle-slider { background: #22c55e; }
+    .toggle-switch input:checked + .toggle-slider::after { transform: translateX(28px); }
+
+    /* ── Save button ── */
+    .save-section {
+      padding: 0 20px;
+    }
+
+    .btn-save {
+      width: 100%;
+      padding: 22px;
+      background: #22c55e;
+      color: white;
+      border: none;
+      border-radius: 16px;
+      font-size: 20px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: background .2s, transform .1s;
+    }
+
+    .btn-save:active { transform: scale(0.98); }
+    .btn-save:disabled { background: #ccc; cursor: not-allowed; }
+
+    .upload-status {
+      text-align: center;
+      font-size: 13px;
+      color: #888;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <button class="back-btn" onclick="history.back()">←</button>
+    <div>
+      <div class="topbar-title">Add New Product</div>
+      <div class="topbar-sub">નવી આઇટમ ઉમેરો</div>
+    </div>
+  </div>
+
+  <!-- Photo upload -->
+  <div class="photo-section">
+    <div class="section-title">📸 Product Photo / ઉત્પાદનનો ફોટો</div>
+    <div class="section-sub">Tap below to take a photo or choose from gallery / ટૅપ કરો</div>
+
+    <div class="photo-upload-area" onclick="document.getElementById('photo-input').click()">
+      <div class="upload-icon">📷</div>
+      <div class="upload-text">Tap to Add Photo</div>
+      <div class="upload-sub">ફોટો ઉમેરવા ટૅપ કરો</div>
+      <img id="preview-img" src="" style="display:none" alt="preview" />
+      <button class="change-photo-btn" id="change-photo-btn" onclick="event.stopPropagation(); document.getElementById('photo-input').click()">
+        Change Photo
+      </button>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" capture="environment" onchange="previewPhoto(this)" />
+  </div>
+
+  <!-- Product name -->
+  <div class="form-section">
+    <div class="section-title">📝 Product Name / ઉત્પાદન નામ</div>
+    <div class="section-sub">Enter the name in English and Gujarati</div>
+
+    <label for="name-en">Name in English <span class="gu">(ઇંગ્લિશ)</span></label>
+    <input type="text" id="name-en" placeholder="e.g. Amul Butter 500g" />
+
+    <label for="name-gu">Name in Gujarati <span class="gu">(ગુજરાતી — optional)</span></label>
+    <input type="text" id="name-gu" placeholder="e.g. અમૂલ બટર ૫૦૦ ગ્રામ" />
+
+    <label for="category">Category / કૅટૅગરી</label>
+    <select id="category">
+      <option value="">Select category... / કૅટૅગરી પસંદ કરો</option>
+    </select>
+  </div>
+
+  <!-- Price -->
+  <div class="form-section">
+    <div class="section-title">💰 Price / કિંમત</div>
+    <div class="section-sub">Enter price (optional) / કિંમત નાખો (ઐચ્છિક)</div>
+
+    <label for="price">Price in ₹ Rupees</label>
+    <input type="number" id="price" placeholder="e.g. 250" min="0" step="0.50" />
+
+    <div class="toggle-row">
+      <div class="toggle-label">
+        <div class="main">Show Price to Customers?</div>
+        <div class="sub">કસ્ટમરને કિંમત દેખાડો? OFF = "Ask for Price"</div>
+      </div>
+      <label class="toggle-switch">
+        <input type="checkbox" id="show-price" />
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Stock status -->
+  <div class="form-section">
+    <div class="section-title">📊 Stock Status / સ્ટૉક</div>
+    <div class="toggle-row">
+      <div class="toggle-label">
+        <div class="main">In Stock / ઉપલબ્ધ</div>
+        <div class="sub">Is this item available right now?</div>
+      </div>
+      <label class="toggle-switch">
+        <input type="checkbox" id="in-stock" checked />
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Save button -->
+  <div class="save-section">
+    <button class="btn-save" id="btn-save" onclick="saveProduct()">
+      ✅ Save Product / સેવ કરો
+    </button>
+    <div class="upload-status" id="upload-status"></div>
+  </div>
+
+  <script>
+    // Load categories into dropdown
+    async function loadCategories() {
+      const { data } = await sb.from('categories').select('*').order('display_order');
+      const sel = document.getElementById('category');
+      (data || []).forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat.id;
+        opt.textContent = `${cat.icon} ${cat.name_en} / ${cat.name_gu}`;
+        sel.appendChild(opt);
+      });
+    }
+
+    loadCategories();
+
+    // Photo preview
+    function previewPhoto(input) {
+      if (!input.files || !input.files[0]) return;
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = document.getElementById('preview-img');
+        img.src = e.target.result;
+        img.style.display = 'block';
+        document.getElementById('change-photo-btn').style.display = 'block';
+        // Hide the placeholder text
+        document.querySelectorAll('.upload-icon, .upload-text, .upload-sub').forEach(el => {
+          el.style.display = 'none';
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Save product
+    async function saveProduct() {
+      const nameEn = document.getElementById('name-en').value.trim();
+      if (!nameEn) {
+        showToast('Please enter the product name in English first.', 'error');
+        document.getElementById('name-en').focus();
+        return;
+      }
+
+      const btn = document.getElementById('btn-save');
+      const status = document.getElementById('upload-status');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      let imageUrl = null;
+
+      // Upload photo if selected
+      const photoInput = document.getElementById('photo-input');
+      if (photoInput.files && photoInput.files[0]) {
+        status.textContent = 'Uploading photo... / ફોટો અપલોડ થઈ રહ્યો છે...';
+        const file = photoInput.files[0];
+        const ext = file.name.split('.').pop();
+        const fileName = `product_${Date.now()}.${ext}`;
+
+        const { data: uploadData, error: uploadError } = await sb.storage
+          .from('product-images')
+          .upload(fileName, file, { upsert: true });
+
+        if (uploadError) {
+          showToast('Photo upload failed. Saving without photo.', 'error');
+        } else {
+          imageUrl = fileName;
+        }
+      }
+
+      status.textContent = 'Saving product...';
+
+      const productData = {
+        name_en: nameEn,
+        name_gu: document.getElementById('name-gu').value.trim() || null,
+        category_id: document.getElementById('category').value || null,
+        price: parseFloat(document.getElementById('price').value) || null,
+        show_price: document.getElementById('show-price').checked,
+        in_stock: document.getElementById('in-stock').checked,
+        image_url: imageUrl,
+        is_active: true,
+      };
+
+      const { error } = await sb.from('products').insert(productData);
+
+      if (error) {
+        showToast('❌ Could not save. Please try again.', 'error');
+        btn.disabled = false;
+        btn.textContent = '✅ Save Product / સેવ કરો';
+        status.textContent = '';
+        return;
+      }
+
+      showToast('✅ Product saved successfully! / ઉત્પાદન સેવ થયું!');
+      status.textContent = '';
+      setTimeout(() => window.location.href = 'admin-products.html', 1500);
+    }
+  </script>
+</body>
+</html>

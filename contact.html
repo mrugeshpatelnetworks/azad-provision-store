@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact | Azad Provision Store</title>
+    <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #E65100; --secondary: #2E7D32; --bg: #FFF8E1; --text: #333; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Mukta', sans-serif; }
+        body { background-color: var(--bg); color: var(--text); }
+        h1, h2, h3 { font-family: 'Poppins', sans-serif; }
+
+        header { background: #fff; padding: 15px 20px; display: flex; align-items: center; gap: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .logo { font-size: 18px; font-weight: 700; color: var(--primary); text-decoration: none; }
+
+        .container { max-width: 900px; margin: 40px auto; padding: 20px; display: flex; flex-wrap: wrap; gap: 24px; }
+
+        .card { background: #fff; padding: 30px; border-radius: 20px; box-shadow: 0 4px 16px rgba(0,0,0,.06); }
+        .info { flex: 1; min-width: 280px; }
+        .form-box { flex: 1; min-width: 280px; }
+
+        h2 { color: var(--primary); font-size: 24px; margin-bottom: 6px; }
+        .h2-gu { font-size: 14px; color: #888; margin-bottom: 24px; }
+
+        .big-wa { display: flex; justify-content: center; align-items: center; gap: 10px; background: #25D366; color: white; padding: 16px; border-radius: 14px; text-align: center; text-decoration: none; font-size: 20px; font-weight: 700; margin-bottom: 24px; transition: background .2s; }
+        .big-wa:hover { background: #1ebe57; }
+
+        .info-row { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 18px; font-size: 17px; }
+        .info-row i { color: var(--secondary); font-size: 22px; margin-top: 2px; flex-shrink: 0; }
+
+        .map-placeholder { width: 100%; height: 200px; background: #eee; border-radius: 14px; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #aaa; margin-top: 20px; font-size: 14px; gap: 8px; }
+        .map-placeholder i { font-size: 36px; }
+
+        /* To embed a real Google Map, replace the .map-placeholder div with:
+           <iframe src="https://maps.google.com/maps?q=Ambavadi+Ahmedabad&output=embed"
+                   width="100%" height="200" style="border:0;border-radius:14px;" allowfullscreen></iframe>
+        */
+
+        label { display: block; font-weight: 700; font-size: 15px; color: #444; margin-bottom: 6px; }
+        input, textarea { width: 100%; padding: 14px 16px; margin-bottom: 16px; border: 2px solid #eee; border-radius: 12px; font-size: 16px; font-family: 'Mukta', sans-serif; outline: none; transition: border-color .2s; }
+        input:focus, textarea:focus { border-color: var(--primary); }
+        textarea { min-height: 100px; resize: vertical; }
+
+        .send-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 16px; border-radius: 12px; font-size: 18px; font-weight: 700; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; font-family: 'Mukta', sans-serif; transition: background .2s; }
+        .send-btn:hover { background: #c84600; }
+
+        .hours-section { background: var(--bg); padding: 16px; border-radius: 12px; margin-top: 20px; }
+        .hours-section h3 { font-size: 15px; color: #555; margin-bottom: 10px; }
+        .hours-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 6px; }
+        .hours-row .open { color: var(--secondary); font-weight: 700; }
+
+        footer { background: #2c2c2c; color: #ccc; padding: 28px 20px; text-align: center; margin-top: 40px; }
+        footer h3 { color: white; margin-bottom: 8px; font-family: 'Poppins'; }
+        footer a { color: #aaa; text-decoration: none; margin: 0 10px; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html"><i class="fas fa-arrow-left" style="color:#333;font-size:20px;"></i></a>
+        <a href="index.html" class="logo">Azad Provision Store</a>
+    </header>
+
+    <div class="container">
+
+        <!-- Contact Info -->
+        <div class="card info">
+            <h2>Get in Touch</h2>
+            <p class="h2-gu">અમારો સંપર્ક કરો</p>
+
+            <a href="https://wa.me/919876543210?text=Hello! I would like to contact Azad Provision Store." class="big-wa">
+                <i class="fab fa-whatsapp"></i> Chat on WhatsApp
+            </a>
+
+            <div class="info-row">
+                <i class="fas fa-phone-alt"></i>
+                <div>
+                    <strong>+91 98765 43210</strong><br>
+                    <span style="font-size:13px;color:#888;">Call or WhatsApp to order</span>
+                </div>
+            </div>
+
+            <div class="info-row">
+                <i class="fas fa-map-marker-alt"></i>
+                <div>
+                    <strong>Ambavadi, Ahmedabad</strong><br>
+                    <span style="font-size:13px;color:#888;">Gujarat 380015, India</span>
+                </div>
+            </div>
+
+            <div class="info-row">
+                <i class="fas fa-motorcycle"></i>
+                <div>
+                    <strong>Home Delivery Available</strong><br>
+                    <span style="font-size:13px;color:#888;">Cash on Delivery · ઘરે ડિલિવરી</span>
+                </div>
+            </div>
+
+            <!-- Google Maps embed placeholder -->
+            <div class="map-placeholder">
+                <i class="fas fa-map-marked-alt"></i>
+                <span>Google Map — Ambavadi, Ahmedabad</span>
+                <span style="font-size:12px;">(Replace with real Google Maps embed)</span>
+            </div>
+
+            <div class="hours-section">
+                <h3>🕐 Store Hours / સ્ટોર સમય</h3>
+                <div class="hours-row"><span>Mon – Sat</span><span class="open">7:00 AM – 10:00 PM</span></div>
+                <div class="hours-row"><span>Sunday</span><span class="open">8:00 AM – 9:00 PM</span></div>
+            </div>
+        </div>
+
+        <!-- Contact Form -->
+        <div class="card form-box">
+            <h2>Send a Message</h2>
+            <p class="h2-gu">WhatsApp સંદેશ મોકલો</p>
+
+            <label for="c-name">Your Name / તમારું નામ</label>
+            <input type="text" id="c-name" placeholder="e.g. Ramesh Patel" />
+
+            <label for="c-phone">Phone Number / ફોન નંબર</label>
+            <input type="tel" id="c-phone" placeholder="+91 98765 XXXXX" />
+
+            <label for="c-msg">Message / સંદેશ</label>
+            <textarea id="c-msg" placeholder="e.g. I want to order Amul Butter and Tata Salt. Please confirm availability and delivery time."></textarea>
+
+            <button class="send-btn" onclick="sendWA()">
+                <i class="fab fa-whatsapp"></i> Send via WhatsApp
+            </button>
+
+            <p style="font-size:13px;color:#aaa;text-align:center;margin-top:14px;">
+                This will open WhatsApp with your message pre-filled.
+            </p>
+        </div>
+
+    </div>
+
+    <footer>
+        <h3>Azad Provision Store</h3>
+        <p>Ambavadi, Ahmedabad, Gujarat 380015</p>
+        <nav style="margin-top:12px;">
+            <a href="index.html">Home</a>
+            <a href="products.html">Products</a>
+            <a href="deals.html">Deals</a>
+            <a href="about.html">About</a>
+        </nav>
+        <p style="margin-top:14px;font-size:12px;opacity:.5;">© 2025 Azad Provision Store · Est. 1990s</p>
+    </footer>
+
+    <script>
+        function sendWA() {
+            const name = document.getElementById('c-name').value.trim();
+            const phone = document.getElementById('c-phone').value.trim();
+            const msg  = document.getElementById('c-msg').value.trim();
+
+            if (!msg) {
+                alert('Please type a message before sending. / સંદેશ લખો.');
+                return;
+            }
+
+            let text = `Hello Azad Provision Store!`;
+            if (name) text += `\n\nI am ${name}`;
+            if (phone) text += ` (${phone})`;
+            text += `.\n\n${msg}`;
+
+            const encoded = encodeURIComponent(text);
+            window.open(`https://wa.me/919876543210?text=${encoded}`, '_blank');
+        }
+    </script>
+</body>
+</html>

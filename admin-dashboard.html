@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dashboard | Azad Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    <script>window.REQUIRED_ROLE = 'admin';</script>
+    <script src="auth-guard.js"></script>
+    <style>
+        body { margin: 0; padding: 0 0 80px; background: #f5f5f5; font-family: 'Mukta', sans-serif; max-width: 500px; margin-left: auto; margin-right: auto; }
+
+        .header { background: #E65100; color: white; padding: 28px 20px; border-radius: 0 0 25px 25px; box-shadow: 0 4px 10px rgba(230,81,0,0.25); display: flex; justify-content: space-between; align-items: flex-start; }
+        .header h1 { font-size: 22px; margin: 0; }
+        .header p { font-size: 16px; margin: 4px 0 0; opacity: .9; }
+        .btn-logout { background: rgba(255,255,255,.2); border: none; color: white; padding: 8px 14px; border-radius: 8px; font-size: 14px; cursor: pointer; font-family: 'Mukta', sans-serif; }
+
+        .stats { display: flex; gap: 12px; padding: 16px 20px; }
+        .stat { flex: 1; background: white; border-radius: 14px; padding: 16px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,.05); }
+        .stat h3 { margin: 0; color: #E65100; font-size: 30px; }
+        .stat span { font-size: 13px; color: #888; }
+
+        .section-label { padding: 16px 20px 6px; font-size: 13px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: .5px; }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 0 20px 20px; }
+        .card { background: white; border-radius: 20px; padding: 24px 16px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,.05); text-decoration: none; color: #333; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 140px; position: relative; transition: transform .15s, box-shadow .15s; }
+        .card:active { transform: scale(0.97); }
+        .card i { font-size: 40px; margin-bottom: 12px; }
+        .card b { font-size: 18px; display: block; }
+        .card span { font-size: 13px; color: #888; margin-top: 3px; }
+
+        .card-add  { border-top: 4px solid #E65100; }
+        .card-list { border-top: 4px solid #2E7D32; }
+        .card-deal { border-top: 4px solid #fbc02d; }
+        .card-vendor { border-top: 4px solid #1976d2; }
+
+        .notif-badge { position: absolute; top: -6px; right: 14px; background: red; color: white; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; }
+
+        .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; background: white; display: flex; justify-content: space-around; padding: 12px 0 16px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); border-top-left-radius: 20px; border-top-right-radius: 20px; }
+        .nav-item { color: #aaa; text-decoration: none; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; }
+        .nav-item i { font-size: 22px; }
+        .nav-item.active { color: #E65100; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div>
+            <h1>Jai Shri Krishna 🙏</h1>
+            <p id="user-name">Owner</p>
+        </div>
+        <button class="btn-logout" onclick="logout()">Logout 🚪</button>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="stats">
+        <div class="stat">
+            <h3 id="stat-products">—</h3>
+            <span>Products</span>
+        </div>
+        <div class="stat">
+            <h3 id="stat-deals">—</h3>
+            <span>Active Deals</span>
+        </div>
+        <div class="stat">
+            <h3 id="stat-pending" style="color:#1976d2;">—</h3>
+            <span>Pending Vendor</span>
+        </div>
+    </div>
+
+    <!-- Menu Grid -->
+    <div class="section-label">What do you want to do? / શું કરવું છે?</div>
+    <div class="grid">
+        <a href="admin-add-product.html" class="card card-add">
+            <i class="fas fa-box-open" style="color:#E65100;"></i>
+            <b>Add Product</b>
+            <span>નવી આઇટમ</span>
+        </a>
+        <a href="admin-products.html" class="card card-list">
+            <i class="fas fa-clipboard-list" style="color:#2E7D32;"></i>
+            <b>My Products</b>
+            <span>મારી આઇટમ્સ</span>
+        </a>
+        <a href="admin-deals.html" class="card card-deal">
+            <i class="fas fa-tags" style="color:#fbc02d;"></i>
+            <b>Deals & Offers</b>
+            <span>ઑફર્સ</span>
+        </a>
+        <a href="admin-vendor-offers.html" class="card card-vendor">
+            <span class="notif-badge" id="vendor-badge" style="display:none;">0</span>
+            <i class="fas fa-handshake" style="color:#1976d2;"></i>
+            <b>Vendor Offers</b>
+            <span>કંપની ઑફર</span>
+        </a>
+    </div>
+
+    <!-- Bottom Nav -->
+    <nav class="bottom-nav">
+        <a href="admin-dashboard.html" class="nav-item active"><i class="fas fa-home"></i>Home</a>
+        <a href="admin-products.html" class="nav-item"><i class="fas fa-box"></i>Items</a>
+        <a href="admin-deals.html" class="nav-item"><i class="fas fa-tags"></i>Deals</a>
+        <a href="admin-vendor-offers.html" class="nav-item"><i class="fas fa-handshake"></i>Vendors</a>
+        <a href="#" class="nav-item" onclick="logout(); return false;"><i class="fas fa-sign-out-alt"></i>Exit</a>
+    </nav>
+
+    <script>
+        async function loadStats() {
+            const { count: prodCount } = await sb.from('products').select('*', { count: 'exact', head: true }).eq('is_active', true);
+            document.getElementById('stat-products').textContent = prodCount ?? 0;
+
+            const today = new Date().toISOString().split('T')[0];
+            const { count: dealCount } = await sb.from('deals').select('*', { count: 'exact', head: true })
+                .eq('is_active', true).or(`valid_until.is.null,valid_until.gte.${today}`);
+            document.getElementById('stat-deals').textContent = dealCount ?? 0;
+
+            const { count: pendingCount } = await sb.from('vendor_submissions').select('*', { count: 'exact', head: true }).eq('status', 'pending');
+            document.getElementById('stat-pending').textContent = pendingCount ?? 0;
+            if (pendingCount > 0) {
+                const badge = document.getElementById('vendor-badge');
+                badge.textContent = pendingCount;
+                badge.style.display = 'flex';
+            }
+        }
+        loadStats();
+    </script>
+</body>
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Offers &amp; Deals — Azad Provision Store</title>
+  <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600;700;800&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+  <style>
+    :root{--primary:#E65100;--primary-dark:#BF360C;--secondary:#2E7D32;--secondary-dark:#1B5E20;--accent:#FFC107;--text:#1a1a1a;--text-muted:#666;--border:#e5e5e5;--shadow:0 2px 12px rgba(0,0,0,.08);}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Mukta',sans-serif;background:#f5f5f5;color:var(--text);}
+    a{text-decoration:none;color:inherit;}
+    .top-bar{background:var(--primary-dark);color:white;font-size:12px;padding:6px 20px;text-align:center;}
+    header{background:white;box-shadow:0 2px 8px rgba(0,0,0,.1);position:sticky;top:0;z-index:1000;}
+    .header-inner{max-width:1200px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:18px;}
+    .logo-text .store-name{font-family:'Poppins',sans-serif;font-size:18px;font-weight:700;color:var(--primary);}
+    .logo-text .store-gu{font-size:12px;color:var(--secondary);font-weight:600;}
+    .btn-wa-header{background:#25D366;color:white;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer;border:none;margin-left:auto;}
+    .navbar{background:var(--primary);}
+    .navbar-inner{max-width:1200px;margin:0 auto;display:flex;}
+    .nav-links{display:flex;align-items:stretch;flex:1;}
+    .nav-links a{color:white;padding:12px 15px;font-size:13px;font-weight:600;display:flex;align-items:center;transition:background .15s;}
+    .nav-links a:hover,.nav-links a.active{background:rgba(255,255,255,.15);}
+    .nav-links a.nav-admin{margin-left:auto;background:rgba(0,0,0,.2);}
+    .nav-links a.nav-vendor{background:rgba(0,0,0,.15);}
+    .deals-hero{background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);color:white;padding:44px 20px;text-align:center;}
+    .deals-hero h1{font-family:'Poppins',sans-serif;font-size:36px;font-weight:800;margin-bottom:8px;}
+    .deals-hero h1 span{color:var(--accent);}
+    .deals-hero p{font-size:16px;opacity:.85;}
+    .tabs-bar{background:white;border-bottom:2px solid var(--border);position:sticky;top:61px;z-index:100;}
+    .tabs-inner{max-width:1200px;margin:0 auto;display:flex;padding:0 20px;}
+    .tab-btn{padding:14px 24px;font-size:15px;font-weight:700;color:var(--text-muted);border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;font-family:'Mukta',sans-serif;transition:all .2s;}
+    .tab-btn.active{color:var(--primary);border-bottom-color:var(--primary);}
+    .main{max-width:1200px;margin:32px auto;padding:0 20px;}
+    .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+    .section-head h2{font-family:'Poppins',sans-serif;font-size:20px;font-weight:700;padding-bottom:7px;position:relative;}
+    .section-head h2::after{content:'';position:absolute;bottom:0;left:0;width:40px;height:3px;background:var(--primary);border-radius:2px;}
+    .deals-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:40px;}
+    .deal-card{background:white;border-radius:14px;overflow:hidden;box-shadow:var(--shadow);border:1px solid var(--border);transition:transform .2s,box-shadow .2s;}
+    .deal-card:hover{transform:translateY(-4px);box-shadow:0 8px 28px rgba(0,0,0,.12);}
+    .deal-card.store-deal{border-top:4px solid var(--primary);}
+    .deal-card.vendor-deal{border-top:4px solid var(--secondary);}
+    .deal-img{width:100%;height:160px;object-fit:cover;display:block;}
+    .deal-img-placeholder{width:100%;height:160px;background:linear-gradient(135deg,#fff3e0,#ffe0b2);display:flex;align-items:center;justify-content:center;font-size:52px;}
+    .deal-body{padding:14px;}
+    .deal-source-badge{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;}
+    .deal-source-badge.store{color:var(--primary);}
+    .deal-source-badge.vendor{color:var(--secondary);}
+    .deal-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;line-height:1.3;}
+    .deal-title-en{font-size:11px;color:var(--text-muted);margin-bottom:8px;}
+    .deal-price-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+    .deal-new-price{font-size:22px;font-weight:800;color:var(--primary);}
+    .deal-old-price{font-size:14px;color:var(--text-muted);text-decoration:line-through;}
+    .deal-saving{background:#dcfce7;color:var(--secondary);font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;margin-left:auto;}
+    .deal-validity{font-size:12px;color:var(--text-muted);margin-bottom:12px;}
+    .deal-validity i{color:var(--primary);margin-right:4px;}
+    .btn-grab{width:100%;padding:11px;background:var(--primary);color:white;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'Mukta',sans-serif;transition:background .15s;}
+    .btn-grab:hover{background:var(--primary-dark);}
+    .btn-grab.vendor{background:var(--secondary);}
+    .btn-grab.vendor:hover{background:var(--secondary-dark);}
+    .empty-state{grid-column:1/-1;text-align:center;padding:60px 20px;color:#aaa;}
+    .empty-state .icon{font-size:54px;margin-bottom:14px;}
+    .flyer-banner{background:linear-gradient(135deg,var(--secondary),var(--secondary-dark));border-radius:14px;padding:28px 32px;color:white;display:flex;align-items:center;justify-content:space-between;margin-bottom:40px;gap:20px;}
+    .flyer-text h3{font-family:'Poppins',sans-serif;font-size:22px;font-weight:700;margin-bottom:6px;}
+    .flyer-text p{font-size:14px;opacity:.85;}
+    .btn-flyer-wa{background:#25D366;color:white;padding:14px 24px;border-radius:10px;font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px;cursor:pointer;border:none;flex-shrink:0;font-family:'Mukta',sans-serif;}
+    .footer-compact{background:#1a1a1a;color:#888;text-align:center;padding:20px;font-size:13px;margin-top:48px;}
+    .wa-float{position:fixed;bottom:26px;right:26px;background:#25D366;color:white;width:56px;height:56px;border-radius:50%;font-size:24px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(37,211,102,.5);cursor:pointer;z-index:999;animation:pulse-wa 2.2s infinite;border:none;}
+    @keyframes pulse-wa{0%,100%{box-shadow:0 4px 20px rgba(37,211,102,.45);}50%{box-shadow:0 4px 32px rgba(37,211,102,.8);}}
+    @media(max-width:900px){.deals-grid{grid-template-columns:repeat(3,1fr);}}
+    @media(max-width:640px){.top-bar{display:none;}.deals-hero h1{font-size:26px;}.deals-grid{grid-template-columns:repeat(2,1fr);}.flyer-banner{flex-direction:column;text-align:center;}}
+    @media(max-width:420px){.deals-grid{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+<div class="top-bar">
+  <i class="fas fa-truck"></i> Ambavadi Home Delivery &nbsp;|&nbsp;
+  <i class="fas fa-phone"></i> +91 98765 43210 &nbsp;|&nbsp;
+  <i class="fas fa-clock"></i> 7am - 10pm
+</div>
+<header>
+  <div class="header-inner">
+    <a href="index.html">
+      <div class="logo-text">
+        <div class="store-name">&#x1F3EA; Azad Provision Store</div>
+        <div class="store-gu">&#xA86D;&#xAB5B;&#xA86A; &#xA92B;&#xACD;&#xA930;&#xACB;&#xA935;&#xABF;&#xAD1D;&#xA928; &#xA938;&#xACD;&#xA9F5;&#xABE;&#xA930;</div>
+      </div>
+    </a>
+    <button class="btn-wa-header" onclick="openWhatsApp('Hello! I want to place an order.')">
+      <i class="fab fa-whatsapp"></i> Order
+    </button>
+  </div>
+</header>
+<div class="navbar">
+  <div class="navbar-inner">
+    <div class="nav-links">
+      <a href="index.html"><i class="fas fa-home" style="margin-right:4px"></i> Home</a>
+      <a href="products.html">Products</a>
+      <a href="deals.html" class="active">&#x1F3F7;&#xFE0F; Offers</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="admin-login.html" class="nav-admin">&#x1F510; Admin</a>
+      <a href="vendor-login.html" class="nav-vendor">&#x1F91D; Vendor</a>
+    </div>
+  </div>
+</div>
+<div class="deals-hero">
+  <h1>&#x1F3F7;&#xFE0F; Offers &amp; <span>Deals</span></h1>
+  <p>Special discounts from Azad Provision Store and brand partners</p>
+</div>
+<div class="tabs-bar">
+  <div class="tabs-inner">
+    <button class="tab-btn active" onclick="showTab('all')">All Offers</button>
+    <button class="tab-btn" onclick="showTab('store')">&#x1F3EA; Store Offers</button>
+    <button class="tab-btn" onclick="showTab('vendor')">&#x1F3ED; Brand Promotions</button>
+  </div>
+</div>
+<div class="main">
+  <div class="flyer-banner">
+    <div class="flyer-text">
+      <h3>&#x1F4F0; Get Weekly Offers on WhatsApp</h3>
+      <p>Send your number — we'll deliver the best deals of the week</p>
+    </div>
+    <button class="btn-flyer-wa" onclick="openWhatsApp('Hello! Please send me weekly offers from Azad Store on WhatsApp.')">
+      <i class="fab fa-whatsapp"></i> Get Offers
+    </button>
+  </div>
+  <div id="section-store">
+    <div class="section-head"><h2>&#x1F3EA; Store Offers</h2><span id="store-count" style="font-size:14px;color:#888"></span></div>
+    <div class="deals-grid" id="store-deals-grid"><div class="empty-state"><div class="icon">&#x23F3;</div><p>Loading...</p></div></div>
+  </div>
+  <div id="section-vendor">
+    <div class="section-head"><h2>&#x1F3ED; Brand &amp; Company Promotions</h2><span id="vendor-count" style="font-size:14px;color:#888"></span></div>
+    <div class="deals-grid" id="vendor-deals-grid"><div class="empty-state"><div class="icon">&#x23F3;</div><p>Loading...</p></div></div>
+  </div>
+</div>
+<div class="footer-compact">
+  &copy; 2024 Azad Provision Store, Ambavadi, Ahmedabad &nbsp;|&nbsp;
+  <a href="index.html" style="color:#E65100">Home</a> &nbsp;|&nbsp;
+  <a href="products.html" style="color:#E65100">Products</a> &nbsp;|&nbsp;
+  <a href="contact.html" style="color:#E65100">Contact</a>
+</div>
+<button class="wa-float" onclick="openWhatsApp('Hello! I want to enquire about offers.')" title="WhatsApp Order">
+  <i class="fab fa-whatsapp"></i>
+</button>
+<script>
+  const WHATSAPP_NUMBER = '919876543210';
+  function openWhatsApp(msg) {
+    window.open('https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(msg), '_blank');
+  }
+  const SAMPLE_DEALS = [
+    { id:'d1', source:'admin',  title_en:'Tata Tea Gold Festival Offer',   title_gu:'Tata Tea Gold Festival Offer',   deal_price:249, original_price:285, valid_until:'2026-12-31', image_url:'https://images.unsplash.com/photo-1487099174927-da3cd6408862?w=600&h=300&fit=crop&q=80' },
+    { id:'d2', source:'admin',  title_en:'Aashirvaad Atta Special (10kg)', title_gu:'Aashirvaad Atta Special (10kg)', deal_price:375, original_price:415, valid_until:'2026-12-31', image_url:'https://images.unsplash.com/photo-1549590143-d5855148a9d5?w=600&h=300&fit=crop&q=80' },
+    { id:'d3', source:'vendor', title_en:'Fortune Sunflower Oil (1L)',      title_gu:'Fortune Sunflower Oil (1L)',      deal_price:145, original_price:165, valid_until:'2026-12-31', image_url:'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=600&h=300&fit=crop&q=80' },
+    { id:'d4', source:'vendor', title_en:"Parle-G Biscuits Festival Pack",  title_gu:"Parle-G Biscuits Festival Pack",  deal_price:90,  original_price:105, valid_until:'2026-12-31', image_url:'https://images.unsplash.com/photo-1554175231-8367073ba4e3?w=600&h=300&fit=crop&q=80' },
+    { id:'d5', source:'admin',  title_en:"Haldiram's Bhujia Bumper Deal",   title_gu:"Haldiram's Bhujia Bumper Deal",   deal_price:130, original_price:155, valid_until:'2026-12-31', image_url:'https://images.unsplash.com/photo-1596270426098-f62225cb9dd0?w=600&h=300&fit=crop&q=80' },
+    { id:'d6', source:'vendor', title_en:'Surf Excel Detergent Offer',      title_gu:'Surf Excel Detergent Offer',      deal_price:170, original_price:195, valid_until:'2026-12-31', image_url:'https://images.unsplash.com/photo-1582735689369-4fe89db7114c?w=600&h=300&fit=crop&q=80' }
+  ];
+  let currentTab = 'all';
+  function showTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('.tab-btn').forEach((btn,i) => btn.classList.toggle('active', ['all','store','vendor'][i]===tab));
+    document.getElementById('section-store').style.display  = (tab==='vendor') ? 'none' : 'block';
+    document.getElementById('section-vendor').style.display = (tab==='store')  ? 'none' : 'block';
+  }
+  function renderDeals(containerId, deals, type) {
+    const el = document.getElementById(containerId);
+    if (!deals.length) { el.innerHTML = '<div class="empty-state"><div class="icon">' + (type==='store'?'&#x1F3F7;&#xFE0F;':'&#x1F3ED;') + '</div><p>No ' + (type==='store'?'store offers':'brand promotions') + ' right now</p></div>'; return; }
+    el.innerHTML = deals.map(d => {
+      const saving = (d.original_price && d.deal_price) ? Math.round(((d.original_price-d.deal_price)/d.original_price)*100) : null;
+      const img = d.image_url && d.image_url.startsWith('http') ? d.image_url : '';
+      const validDate = d.valid_until ? new Date(d.valid_until).toLocaleDateString('en-IN',{day:'numeric',month:'long'}) : null;
+      return '<div class="deal-card '+type+'-deal">'
+        + (img ? '<img class="deal-img" src="'+img+'" alt="'+d.title_en+'" loading="lazy" />' : '<div class="deal-img-placeholder">'+(type==='store'?'&#x1F3F7;&#xFE0F;':'&#x1F3ED;')+'</div>')
+        + '<div class="deal-body">'
+        + '<div class="deal-source-badge '+type+'">'+(type==='store'?'&#x1F3EA; STORE OFFER':'&#x1F3ED; BRAND PROMO')+'</div>'
+        + '<div class="deal-title">'+d.title_en+'</div>'
+        + (d.deal_price ? '<div class="deal-price-row"><span class="deal-new-price">&#8377;'+d.deal_price+'</span>'+(d.original_price?'<span class="deal-old-price">&#8377;'+d.original_price+'</span>':'')+(saving?'<span class="deal-saving">&#8722;'+saving+'%</span>':'')+'</div>' : '')
+        + (validDate ? '<div class="deal-validity"><i class="fas fa-calendar-alt"></i> Until '+validDate+'</div>' : '')
+        + '<button class="btn-grab '+(type==='vendor'?'vendor':'')+'" onclick="openWhatsApp(\'Hello! I want this offer: '+d.title_en+(d.deal_price?' — Rs.'+d.deal_price:'')+'\')"><i class="fab fa-whatsapp"></i> Grab Offer</button>'
+        + '</div></div>';
+    }).join('');
+  }
+  async function loadDeals() {
+    const today = new Date().toISOString().split('T')[0];
+    let allDeals = [];
+    try {
+      const { data } = await sb.from('deals').select('*').eq('is_active',true).gte('valid_until',today).order('created_at',{ascending:false});
+      allDeals = (data && data.length) ? data : SAMPLE_DEALS;
+    } catch(e) { allDeals = SAMPLE_DEALS; }
+    const storeDeals  = allDeals.filter(d => d.source==='admin');
+    const vendorDeals = allDeals.filter(d => d.source==='vendor');
+    document.getElementById('store-count').textContent  = storeDeals.length + ' offers';
+    document.getElementById('vendor-count').textContent = vendorDeals.length + ' promotions';
+    renderDeals('store-deals-grid',  storeDeals,  'store');
+    renderDeals('vendor-deals-grid', vendorDeals, 'vendor');
+  }
+  loadDeals();
+</script>
+</body>
+</html>

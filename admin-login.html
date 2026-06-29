@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Owner Login | Azad Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    <style>
+        body { margin: 0; padding: 20px; background: #FFF8E1; font-family: 'Mukta', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
+
+        .store-logo { text-align: center; color: #E65100; margin-bottom: 36px; }
+        .store-logo i { font-size: 64px; margin-bottom: 8px; display: block; }
+        .store-logo h1 { font-size: 26px; font-weight: 700; margin: 0 0 4px; }
+        .store-logo h2 { font-size: 17px; color: #2E7D32; font-weight: 600; margin: 0; }
+
+        .login-box { background: #fff; width: 100%; max-width: 400px; padding: 32px 24px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+
+        .owner-badge { text-align: center; background: #fff8e1; color: #E65100; border: 2px solid #ffcc02; padding: 8px 18px; border-radius: 20px; font-size: 14px; font-weight: 700; margin-bottom: 28px; display: inline-block; width: 100%; box-sizing: border-box; }
+
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; font-weight: 700; font-size: 16px; color: #444; margin-bottom: 8px; }
+        input { width: 100%; padding: 18px 16px; font-size: 18px; border: 2px solid #ddd; border-radius: 14px; box-sizing: border-box; font-family: 'Mukta', sans-serif; outline: none; transition: border-color .2s; }
+        input:focus { border-color: #E65100; }
+
+        .big-btn { width: 100%; background: #E65100; color: white; border: none; padding: 20px; font-size: 22px; font-weight: 700; border-radius: 14px; margin-top: 8px; cursor: pointer; font-family: 'Mukta', sans-serif; transition: background .2s; }
+        .big-btn:hover { background: #c84600; }
+        .big-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+        .forgot { text-align: center; display: block; margin-top: 20px; color: #888; font-size: 15px; text-decoration: none; }
+        .forgot:hover { color: #E65100; }
+
+        .error-box { background: #fee2e2; color: #dc2626; padding: 12px 16px; border-radius: 10px; margin-bottom: 16px; font-size: 15px; display: none; }
+
+        .footer-note { margin-top: 24px; font-size: 12px; color: #bbb; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="store-logo">
+        <i class="fas fa-store"></i>
+        <h1>Azad Provision Store</h1>
+        <h2>આઝાદ પ્રોવિઝન સ્ટોર</h2>
+    </div>
+
+    <div class="login-box">
+        <div class="owner-badge">🔐 Owner Login / માલિક લૉગિન</div>
+
+        <div class="error-box" id="error-box"></div>
+
+        <form id="login-form">
+            <div class="input-group">
+                <label>Email / ઈ-મેઈલ</label>
+                <input type="email" id="email" placeholder="your@email.com" autocomplete="email" required />
+            </div>
+            <div class="input-group">
+                <label>Password / પાસવર્ડ</label>
+                <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" required />
+            </div>
+            <button type="submit" class="big-btn" id="btn-login">
+                Enter / લોગીન <i class="fas fa-arrow-right"></i>
+            </button>
+        </form>
+
+        <a href="#" class="forgot" onclick="forgotPassword(); return false;">
+            Forgot Password? (પાસવર્ડ ભૂલી ગયા?)
+        </a>
+    </div>
+
+    <div class="footer-note">Only the store owner can log in here.</div>
+
+    <script>
+        // If already logged in as admin, skip to dashboard
+        (async () => {
+            const { data: { session } } = await sb.auth.getSession();
+            if (session?.user?.user_metadata?.role === 'admin') {
+                window.location.href = 'admin-dashboard.html';
+            }
+        })();
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-login');
+            const errEl = document.getElementById('error-box');
+            errEl.style.display = 'none';
+            btn.disabled = true;
+            btn.innerHTML = 'Logging in... <i class="fas fa-spinner fa-spin"></i>';
+
+            const { data, error } = await sb.auth.signInWithPassword({
+                email: document.getElementById('email').value.trim(),
+                password: document.getElementById('password').value,
+            });
+
+            if (error || data?.user?.user_metadata?.role !== 'admin') {
+                if (data?.user) await sb.auth.signOut();
+                errEl.textContent = 'Wrong email or password. Please try again.\nખોટો ઈ-મેઈલ અથવા પાસવર્ડ.';
+                errEl.style.display = 'block';
+                btn.disabled = false;
+                btn.innerHTML = 'Enter / લોગીન <i class="fas fa-arrow-right"></i>';
+                return;
+            }
+
+            window.location.href = 'admin-dashboard.html';
+        });
+
+        async function forgotPassword() {
+            const email = document.getElementById('email').value.trim();
+            if (!email) {
+                alert('Please type your email first.\npahela email type karo.');
+                return;
+            }
+            const { error } = await sb.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.origin + '/admin-login.html'
+            });
+            if (!error) {
+                alert('Password reset email sent! Check your inbox.\nPassword reset email moklayu!');
+            } else {
+                alert('Could not send. Check your email address.');
+            }
+        }
+    </script>
+</body>
+</html>

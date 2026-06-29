@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Products — Azad Provision Store</title>
+  <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600;700;800&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+  <style>
+    :root{--primary:#E65100;--primary-dark:#BF360C;--secondary:#2E7D32;--secondary-dark:#1B5E20;--accent:#FFC107;--text:#1a1a1a;--text-muted:#666;--border:#e5e5e5;--shadow:0 2px 12px rgba(0,0,0,.08);}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Mukta',sans-serif;background:#f5f5f5;color:var(--text);}
+    a{text-decoration:none;color:inherit;}
+    .top-bar{background:var(--primary-dark);color:white;font-size:12px;padding:6px 20px;text-align:center;}
+    header{background:white;box-shadow:0 2px 8px rgba(0,0,0,.1);position:sticky;top:0;z-index:1000;}
+    .header-inner{max-width:1200px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:16px;}
+    .logo-text .store-name{font-family:'Poppins',sans-serif;font-size:18px;font-weight:700;color:var(--primary);}
+    .logo-text .store-gu{font-size:11px;color:var(--secondary);font-weight:600;}
+    .search-bar{flex:1;display:flex;border:2px solid var(--border);border-radius:8px;overflow:hidden;}
+    .search-bar:focus-within{border-color:var(--primary);}
+    .search-bar input{flex:1;padding:10px 14px;font-size:14px;border:none;outline:none;font-family:'Mukta',sans-serif;}
+    .search-bar button{background:var(--primary);color:white;border:none;padding:0 18px;font-size:15px;cursor:pointer;}
+    .btn-wa-header{background:#25D366;color:white;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer;border:none;flex-shrink:0;}
+    .navbar{background:var(--primary);}
+    .navbar-inner{max-width:1200px;margin:0 auto;display:flex;align-items:stretch;}
+    .nav-all-cats{background:var(--primary-dark);color:white;padding:0 18px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;cursor:pointer;position:relative;flex-shrink:0;}
+    .nav-all-cats:hover{background:#8d2200;}
+    .cats-dropdown{display:none;position:absolute;top:100%;left:0;width:210px;background:white;box-shadow:0 8px 24px rgba(0,0,0,.15);border-radius:0 0 10px 10px;z-index:999;padding:6px 0;}
+    .nav-all-cats:hover .cats-dropdown,.nav-all-cats:focus-within .cats-dropdown{display:block;}
+    .cats-dropdown a{display:flex;align-items:center;gap:8px;padding:9px 16px;font-size:13px;color:var(--text);border-bottom:1px solid #f5f5f5;}
+    .cats-dropdown a:hover{background:#fff3e0;color:var(--primary);}
+    .nav-links{display:flex;align-items:stretch;overflow-x:auto;}
+    .nav-links a{color:white;padding:12px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;transition:background .15s;white-space:nowrap;}
+    .nav-links a:hover,.nav-links a.active{background:rgba(255,255,255,.15);}
+    .nav-links a.nav-admin{margin-left:auto;background:rgba(0,0,0,.2);}
+    .nav-links a.nav-vendor{background:rgba(0,0,0,.15);}
+    .breadcrumb{background:white;border-bottom:1px solid var(--border);}
+    .breadcrumb-inner{max-width:1200px;margin:0 auto;padding:10px 20px;font-size:13px;color:var(--text-muted);}
+    .breadcrumb-inner a{color:var(--primary);}
+    .page-inner{max-width:1200px;margin:20px auto;padding:0 20px;display:flex;gap:20px;align-items:flex-start;}
+    .sidebar{width:220px;flex-shrink:0;}
+    .sidebar-card{background:white;border-radius:12px;overflow:hidden;box-shadow:var(--shadow);margin-bottom:14px;}
+    .sidebar-card-head{background:var(--primary);color:white;padding:12px 16px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;}
+    .cat-list{list-style:none;}
+    .cat-list li a{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;font-size:13px;color:var(--text);border-bottom:1px solid #f5f5f5;cursor:pointer;transition:background .15s;}
+    .cat-list li a:hover,.cat-list li a.active{background:#fff3e0;color:var(--primary);font-weight:600;}
+    .cat-list li a .cat-count{background:#f0f0f0;color:var(--text-muted);font-size:11px;font-weight:700;padding:2px 7px;border-radius:10px;}
+    .cat-list li a.active .cat-count{background:var(--primary);color:white;}
+    .filter-options{padding:12px 16px;}
+    .filter-options label{display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;padding:7px 0;}
+    .filter-options input[type=checkbox]{width:16px;height:16px;accent-color:var(--primary);}
+    .products-main{flex:1;min-width:0;}
+    .products-toolbar{background:white;border-radius:10px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;box-shadow:var(--shadow);}
+    .toolbar-left{font-size:14px;color:var(--text-muted);}
+    .toolbar-left strong{color:var(--text);}
+    .sort-select{padding:7px 12px;border:1px solid var(--border);border-radius:7px;font-size:13px;font-family:'Mukta',sans-serif;color:var(--text);outline:none;cursor:pointer;}
+    .active-filter-bar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+    .filter-tag{background:#fff3e0;color:var(--primary);border:1px solid var(--primary);padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;}
+    .filter-tag .remove{cursor:pointer;font-size:14px;}
+    .product-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+    .product-card{background:white;border-radius:12px;overflow:hidden;box-shadow:var(--shadow);transition:transform .2s,box-shadow .2s;border:2px solid var(--border);}
+    .product-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.12);}
+    .product-card.in-cart{border-color:var(--secondary);}
+    .product-img-wrap{position:relative;padding-top:100%;background:#f9f9f9;}
+    .product-img-wrap img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+    .badge-out{position:absolute;top:7px;left:7px;background:#ef4444;color:white;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;}
+    .badge-incart{position:absolute;top:7px;right:7px;background:var(--secondary);color:white;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;}
+    .product-info{padding:10px;}
+    .product-cat-tag{font-size:10px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;}
+    .product-name{font-size:13px;font-weight:700;line-height:1.3;margin-bottom:1px;}
+    .product-name-en{font-size:11px;color:var(--text-muted);margin-bottom:6px;}
+    .product-price{font-size:17px;font-weight:700;color:var(--primary);margin-bottom:8px;}
+    .qty-cart-row{display:flex;align-items:center;gap:6px;}
+    .qty-wrap{display:flex;align-items:center;border:1.5px solid var(--border);border-radius:7px;overflow:hidden;}
+    .qty-btn{background:#f5f5f5;border:none;width:28px;height:32px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--primary);}
+    .qty-btn:hover{background:#fff3e0;}
+    .qty-val{width:32px;text-align:center;font-size:13px;font-weight:700;border:none;outline:none;font-family:'Mukta',sans-serif;background:white;}
+    .btn-add-cart{flex:1;background:var(--secondary);color:white;border:none;border-radius:7px;padding:7px 6px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Mukta',sans-serif;display:flex;align-items:center;justify-content:center;gap:4px;}
+    .btn-add-cart:hover{background:var(--secondary-dark);}
+    .btn-ask-cart{flex:1;background:var(--primary);color:white;border:none;border-radius:7px;padding:7px 6px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Mukta',sans-serif;}
+    .btn-out{flex:1;background:#e0e0e0;color:#999;border:none;border-radius:7px;padding:7px 6px;font-size:12px;cursor:not-allowed;font-family:'Mukta',sans-serif;}
+    .order-bar{position:fixed;bottom:0;left:0;right:0;background:var(--secondary);color:white;padding:12px 20px;display:none;align-items:center;justify-content:space-between;z-index:900;box-shadow:0 -4px 20px rgba(0,0,0,.2);}
+    .order-bar.visible{display:flex;}
+    .btn-view-order{background:white;color:var(--secondary);padding:10px 20px;border-radius:8px;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:'Mukta',sans-serif;}
+    .cart-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1100;display:none;}
+    .cart-overlay.open{display:block;}
+    .cart-modal{position:fixed;top:0;right:-480px;width:460px;max-width:100vw;height:100vh;background:white;z-index:1200;display:flex;flex-direction:column;box-shadow:-8px 0 32px rgba(0,0,0,.2);transition:right .3s ease;}
+    .cart-modal.open{right:0;}
+    .cart-modal-head{background:var(--secondary);color:white;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;}
+    .cart-modal-head h3{font-size:18px;font-weight:700;}
+    .cart-close{background:none;border:none;color:white;font-size:22px;cursor:pointer;}
+    .cart-items{flex:1;overflow-y:auto;padding:16px;}
+    .cart-item{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border);border-radius:10px;margin-bottom:10px;}
+    .cart-item-img{width:56px;height:56px;border-radius:8px;object-fit:cover;flex-shrink:0;}
+    .cart-item-info{flex:1;min-width:0;}
+    .cart-item-name{font-size:13px;font-weight:700;margin-bottom:2px;}
+    .cart-item-en{font-size:11px;color:var(--text-muted);}
+    .cart-item-price{font-size:13px;color:var(--primary);font-weight:700;}
+    .cart-item-qty-row{display:flex;align-items:center;gap:6px;margin-top:6px;}
+    .cart-qty-btn{background:var(--primary);color:white;border:none;width:24px;height:24px;border-radius:4px;font-size:14px;cursor:pointer;font-weight:700;}
+    .cart-qty-val{font-size:14px;font-weight:700;min-width:24px;text-align:center;}
+    .cart-remove{margin-left:auto;background:none;border:none;color:#aaa;font-size:18px;cursor:pointer;}
+    .cart-empty{text-align:center;padding:60px 20px;color:#aaa;}
+    .cart-empty .e-icon{font-size:54px;margin-bottom:12px;}
+    .cart-foot{padding:16px;border-top:2px solid var(--border);}
+    .cart-total-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:16px;font-weight:700;}
+    .cart-total-amount{color:var(--primary);font-size:20px;}
+    .cart-note{font-size:12px;color:#aaa;margin-bottom:14px;text-align:center;}
+    .btn-send-wa{width:100%;background:#25D366;color:white;border:none;border-radius:10px;padding:14px;font-size:16px;font-weight:700;cursor:pointer;font-family:'Mukta',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;}
+    .btn-send-wa:hover{background:#128C7E;}
+    .btn-clear-cart{width:100%;background:#f5f5f5;color:var(--text-muted);border:none;border-radius:10px;padding:10px;font-size:13px;cursor:pointer;font-family:'Mukta',sans-serif;}
+    .empty-products{text-align:center;padding:80px 20px;color:#aaa;grid-column:1/-1;}
+    .wa-float{position:fixed;bottom:70px;right:26px;background:#25D366;color:white;width:52px;height:52px;border-radius:50%;font-size:22px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(37,211,102,.5);cursor:pointer;z-index:800;border:none;}
+    .footer-compact{background:#1a1a1a;color:#888;text-align:center;padding:20px;font-size:13px;margin-top:60px;}
+    @media(max-width:900px){.product-grid{grid-template-columns:repeat(3,1fr);}}
+    @media(max-width:768px){.page-inner{flex-direction:column;}.sidebar{width:100%;}.product-grid{grid-template-columns:repeat(2,1fr);}}
+  </style>
+</head>
+<body>
+<div class="top-bar">
+  <i class="fas fa-truck"></i> Home Delivery — Ambavadi &amp; nearby &nbsp;|&nbsp;
+  <i class="fas fa-phone"></i> +91 98765 43210 &nbsp;|&nbsp;
+  <i class="fas fa-clock"></i> 7am - 10pm
+</div>
+<header>
+  <div class="header-inner">
+    <a href="index.html">
+      <div class="logo-text">
+        <div class="store-name">&#x1F3EA; Azad Provision Store</div>
+        <div class="store-gu">&#xA86D;&#xAB5B;&#xA86A; &#xA92B;&#xACD;&#xA930;&#xACB;&#xA935;&#xABF;&#xAD1D;&#xA928; &#xA938;&#xACD;&#xA9F5;&#xABE;&#xA930;</div>
+      </div>
+    </a>
+    <div class="search-bar">
+      <input type="text" id="search-input" placeholder="Search products..." oninput="applyFilters()" />
+      <button><i class="fas fa-search"></i></button>
+    </div>
+    <button class="btn-wa-header" onclick="openCartModal()">
+      <i class="fas fa-shopping-bag"></i> Order
+    </button>
+  </div>
+</header>
+<div class="navbar">
+  <div class="navbar-inner">
+    <div class="nav-all-cats" tabindex="0">
+      <i class="fas fa-bars"></i> Categories
+      <div class="cats-dropdown" id="cats-dropdown-nav"></div>
+    </div>
+    <div class="nav-links">
+      <a href="index.html"><i class="fas fa-home" style="margin-right:4px"></i> Home</a>
+      <a href="products.html" class="active">Products</a>
+      <a href="deals.html">&#x1F3F7;&#xFE0F; Offers</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="admin-login.html" class="nav-admin">&#x1F510; Admin</a>
+      <a href="vendor-login.html" class="nav-vendor">&#x1F91D; Vendor</a>
+    </div>
+  </div>
+</div>
+<div class="breadcrumb">
+  <div class="breadcrumb-inner">
+    <a href="index.html">Home</a> &rsaquo; <strong>Products</strong>
+  </div>
+</div>
+<div class="page-inner">
+  <aside class="sidebar">
+    <div class="sidebar-card">
+      <div class="sidebar-card-head"><i class="fas fa-list"></i> Categories</div>
+      <ul class="cat-list" id="cat-list"></ul>
+    </div>
+    <div class="sidebar-card">
+      <div class="sidebar-card-head"><i class="fas fa-filter"></i> Filter</div>
+      <div class="filter-options">
+        <label><input type="checkbox" id="filter-instock" onchange="applyFilters()" /> In Stock Only</label>
+        <label><input type="checkbox" id="filter-price" onchange="applyFilters()" /> Price Listed</label>
+      </div>
+    </div>
+  </aside>
+  <div class="products-main">
+    <div class="products-toolbar">
+      <div class="toolbar-left"><strong id="result-count">0</strong> products found</div>
+      <select class="sort-select" id="sort-select" onchange="applyFilters()">
+        <option value="default">Sort: Default</option>
+        <option value="price-asc">Price: Low to High</option>
+        <option value="price-desc">Price: High to Low</option>
+        <option value="name">Name A-Z</option>
+      </select>
+    </div>
+    <div class="active-filter-bar" id="active-filter-bar"></div>
+    <div class="product-grid" id="product-grid">
+      <div class="empty-products"><p>Loading products...</p></div>
+    </div>
+  </div>
+</div>
+<div class="order-bar" id="order-bar">
+  <div style="font-size:14px;font-weight:600;">
+    &#x1F6D2; <span style="font-size:18px;font-weight:800;" id="bar-count">0</span> items &nbsp;|&nbsp; &#8377;<span style="font-size:18px;font-weight:800;" id="bar-total">0</span>
+  </div>
+  <button class="btn-view-order" onclick="openCartModal()">
+    <i class="fas fa-shopping-bag"></i> View Order
+  </button>
+</div>
+<div class="cart-overlay" id="cart-overlay" onclick="closeCartModal()"></div>
+<div class="cart-modal" id="cart-modal">
+  <div class="cart-modal-head">
+    <h3>&#x1F6D2; My Order</h3>
+    <button class="cart-close" onclick="closeCartModal()">&times;</button>
+  </div>
+  <div class="cart-items" id="cart-items"></div>
+  <div class="cart-foot">
+    <div class="cart-total-row">
+      <span>Estimated Total</span>
+      <span class="cart-total-amount">&#8377;<span id="cart-total-display">0</span></span>
+    </div>
+    <div class="cart-note">* Items without listed price not included</div>
+    <button class="btn-send-wa" onclick="sendCartToWhatsApp()">
+      <i class="fab fa-whatsapp"></i> Send Order on WhatsApp
+    </button>
+    <button class="btn-clear-cart" onclick="clearCart()">&#x1F5D1;&#xFE0F; Clear Order</button>
+  </div>
+</div>
+<button class="wa-float" onclick="openWhatsApp('Hello Azad Provision Store! I want to place an order.')" title="WhatsApp">
+  <i class="fab fa-whatsapp"></i>
+</button>
+<div class="footer-compact">
+  &copy; 2024 Azad Provision Store, Ambavadi, Ahmedabad &nbsp;|&nbsp;
+  <a href="index.html" style="color:#E65100">Home</a> &nbsp;|&nbsp;
+  <a href="deals.html" style="color:#E65100">Offers</a> &nbsp;|&nbsp;
+  <a href="contact.html" style="color:#E65100">Contact</a>
+</div>
+<script>
+  const WHATSAPP_NUMBER = '919876543210';
+  function openWhatsApp(msg) { window.open('https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(msg), '_blank'); }
+
+  const SAMPLE_CATEGORIES = [
+    { id:'1', name_en:'Grains & Flour',  icon:'&#x1F33E;' },
+    { id:'3', name_en:'Oils & Ghee',     icon:'&#x1FAD9;' },
+    { id:'4', name_en:'Spices & Masala', icon:'&#x1F336;&#xFE0F;' },
+    { id:'5', name_en:'Snacks',          icon:'&#x1F37F;' },
+    { id:'6', name_en:'Beverages',       icon:'&#x1F9C3;' },
+    { id:'7', name_en:'Personal Care',   icon:'&#x1F9F4;' },
+    { id:'8', name_en:'Household',       icon:'&#x1F9F9;' },
+    { id:'9', name_en:'Packaged Food',   icon:'&#x1F4E6;' }
+  ];
+
+  const SAMPLE_PRODUCTS = [
+    { id:'s1',  category_id:'3', price:265, show_price:true,  in_stock:true,  name_en:'Amul Butter (500g)',        image_url:'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=400&h=400&fit=crop&q=80', categories:{name_en:'Oils & Ghee'} },
+    { id:'s2',  category_id:'1', price:22,  show_price:true,  in_stock:true,  name_en:'Tata Salt (1kg)',           image_url:'https://images.unsplash.com/photo-1518110925495-5fe2fda0442c?w=400&h=400&fit=crop&q=80', categories:{name_en:'Grains & Flour'} },
+    { id:'s3',  category_id:'1', price:425, show_price:true,  in_stock:true,  name_en:'India Gate Basmati Rice (5kg)', image_url:'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400&h=400&fit=crop&q=80', categories:{name_en:'Grains & Flour'} },
+    { id:'s4',  category_id:'3', price:155, show_price:true,  in_stock:true,  name_en:'Fortune Sunflower Oil (1L)', image_url:'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=400&h=400&fit=crop&q=80', categories:{name_en:'Oils & Ghee'} },
+    { id:'s5',  category_id:'6', price:279, show_price:true,  in_stock:true,  name_en:'Tata Tea Gold (500g)',      image_url:'https://images.unsplash.com/photo-1487099174927-da3cd6408862?w=400&h=400&fit=crop&q=80', categories:{name_en:'Beverages'} },
+    { id:'s6',  category_id:'1', price:395, show_price:true,  in_stock:true,  name_en:'Aashirvaad Atta (10kg)',    image_url:'https://images.unsplash.com/photo-1549590143-d5855148a9d5?w=400&h=400&fit=crop&q=80', categories:{name_en:'Grains & Flour'} },
+    { id:'s7',  category_id:'5', price:75,  show_price:true,  in_stock:true,  name_en:"Parle-G Biscuits (1kg)",   image_url:'https://images.unsplash.com/photo-1554175231-8367073ba4e3?w=400&h=400&fit=crop&q=80', categories:{name_en:'Snacks'} },
+    { id:'s8',  category_id:'5', price:145, show_price:true,  in_stock:true,  name_en:"Haldiram's Bhujia (400g)", image_url:'https://images.unsplash.com/photo-1596270426098-f62225cb9dd0?w=400&h=400&fit=crop&q=80', categories:{name_en:'Snacks'} },
+    { id:'s9',  category_id:'7', price:98,  show_price:true,  in_stock:true,  name_en:'Colgate MaxFresh (300g)',   image_url:'https://images.unsplash.com/photo-1520013573795-38516d2661e4?w=400&h=400&fit=crop&q=80', categories:{name_en:'Personal Care'} },
+    { id:'s10', category_id:'4', price:85,  show_price:true,  in_stock:true,  name_en:'MDH Garam Masala (100g)',  image_url:'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=400&h=400&fit=crop&q=80', categories:{name_en:'Spices & Masala'} },
+    { id:'s11', category_id:'8', price:185, show_price:true,  in_stock:true,  name_en:'Surf Excel Detergent (1kg)', image_url:'https://images.unsplash.com/photo-1582735689369-4fe89db7114c?w=400&h=400&fit=crop&q=80', categories:{name_en:'Household'} },
+    { id:'s12', category_id:'9', price:130, show_price:true,  in_stock:true,  name_en:'Maggi Noodles (12 pack)',  image_url:'https://images.unsplash.com/photo-1587115507286-f27e42621c25?w=400&h=400&fit=crop&q=80', categories:{name_en:'Packaged Food'} }
+  ];
+
+  let allProducts = [], allCategories = [], activeCatId = 'all', cart = {};
+
+  async function init() {
+    try {
+      const [catRes, prodRes] = await Promise.all([
+        sb.from('categories').select('*').order('name_en'),
+        sb.from('products').select('*, categories(name_en)').eq('is_active', true)
+      ]);
+      allCategories = (catRes.data && catRes.data.length) ? catRes.data : SAMPLE_CATEGORIES;
+      allProducts   = (prodRes.data && prodRes.data.length) ? prodRes.data : SAMPLE_PRODUCTS;
+    } catch(e) {
+      allCategories = SAMPLE_CATEGORIES;
+      allProducts   = SAMPLE_PRODUCTS;
+    }
+    renderCategoryNav();
+    renderSidebarCats();
+    applyFilters();
+  }
+
+  function renderCategoryNav() {
+    document.getElementById('cats-dropdown-nav').innerHTML = allCategories.map(c =>
+      '<a href="#" onclick="selectCat(\'' + c.id + '\');return false;">' + (c.icon||'&#x1F4E6;') + ' ' + c.name_en + '</a>'
+    ).join('');
+  }
+
+  function renderSidebarCats() {
+    const counts = {};
+    allProducts.forEach(p => { counts[p.category_id] = (counts[p.category_id]||0)+1; });
+    document.getElementById('cat-list').innerHTML =
+      '<li><a href="#" class="' + (activeCatId==='all'?'active':'') + '" onclick="selectCat('all');return false;"><span>&#x1F3EA; All</span><span class="cat-count">' + allProducts.length + '</span></a></li>' +
+      allCategories.filter(c => counts[c.id]).map(c =>
+        '<li><a href="#" class="' + (activeCatId===c.id?'active':'') + '" onclick="selectCat(\'' + c.id + '\');return false;"><span>' + (c.icon||'') + ' ' + c.name_en + '</span><span class="cat-count">' + (counts[c.id]||0) + '</span></a></li>'
+      ).join('');
+  }
+
+  function selectCat(id) { activeCatId = id; renderSidebarCats(); applyFilters(); }
+
+  function applyFilters() {
+    const q = (document.getElementById('search-input')?.value||'').toLowerCase();
+    const inStock = document.getElementById('filter-instock')?.checked;
+    const priceOnly = document.getElementById('filter-price')?.checked;
+    const sort = document.getElementById('sort-select')?.value||'default';
+    let list = allProducts.slice();
+    if (activeCatId !== 'all') list = list.filter(p => p.category_id === activeCatId);
+    if (q) list = list.filter(p => p.name_en.toLowerCase().includes(q));
+    if (inStock) list = list.filter(p => p.in_stock);
+    if (priceOnly) list = list.filter(p => p.show_price && p.price);
+    if (sort==='price-asc')  list.sort((a,b) => (a.price||9999)-(b.price||9999));
+    if (sort==='price-desc') list.sort((a,b) => (b.price||0)-(a.price||0));
+    if (sort==='name')       list.sort((a,b) => a.name_en.localeCompare(b.name_en));
+    document.getElementById('result-count').textContent = list.length;
+    renderProducts(list);
+    const bar = document.getElementById('active-filter-bar');
+    bar.innerHTML = '';
+    if (activeCatId !== 'all') {
+      const cat = allCategories.find(c => c.id===activeCatId);
+      if (cat) bar.innerHTML += '<span class="filter-tag">' + cat.name_en + ' <span class="remove" onclick="selectCat('all')">&#x2715;</span></span>';
+    }
+  }
+
+  function renderProducts(list) {
+    const grid = document.getElementById('product-grid');
+    if (!list.length) { grid.innerHTML = '<div class="empty-products"><p>No products found</p></div>'; return; }
+    grid.innerHTML = list.map(p => {
+      const inCart = !!cart[p.id];
+      const qty = cart[p.id] ? cart[p.id].qty : 1;
+      const catName = p.categories ? p.categories.name_en : '';
+      const img = p.image_url && p.image_url.startsWith('http') ? p.image_url : '';
+      return '<div class="product-card' + (inCart?' in-cart':'') + '">'
+        + '<div class="product-img-wrap">'
+        + (img ? '<img src="' + img + '" alt="' + p.name_en + '" loading="lazy" />' : '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:48px">&#x1F4E6;</div>')
+        + (!p.in_stock ? '<span class="badge-out">Out of Stock</span>' : '')
+        + (inCart ? '<span class="badge-incart">&#x2713; Added</span>' : '')
+        + '</div>'
+        + '<div class="product-info">'
+        + (catName ? '<div class="product-cat-tag">' + catName + '</div>' : '')
+        + '<div class="product-name">' + p.name_en + '</div>'
+        + '<div class="product-price">' + (p.show_price && p.price ? '&#8377;' + p.price : '<span style="font-size:12px;color:#888;font-weight:500">Ask for price</span>') + '</div>'
+        + '<div class="qty-cart-row">'
+        + '<div class="qty-wrap">'
+        + '<button class="qty-btn" onclick="changeQty(\'' + p.id + '\',-1)">&#8722;</button>'
+        + '<input class="qty-val" id="qty-' + p.id + '" type="number" value="' + qty + '" min="1" max="99" />'
+        + '<button class="qty-btn" onclick="changeQty(\'' + p.id + '\',1)">+</button>'
+        + '</div>'
+        + (p.in_stock
+            ? (p.show_price && p.price
+                ? '<button class="btn-add-cart" onclick="addToCart(\'' + p.id + '\')">&#x1F6D2; Add</button>'
+                : '<button class="btn-ask-cart" onclick="askPrice(\'' + p.id + '\')"><i class=\"fab fa-whatsapp\"></i> Ask Price</button>')
+            : '<button class="btn-out">Unavailable</button>')
+        + '</div>'
+        + '</div></div>';
+    }).join('');
+  }
+
+  function changeQty(id, delta) {
+    const inp = document.getElementById('qty-' + id);
+    if (!inp) return;
+    let v = Math.max(1, Math.min(99, (parseInt(inp.value)||1) + delta));
+    inp.value = v;
+    if (cart[id]) { cart[id].qty = v; updateOrderBar(); renderCartItems(); }
+  }
+
+  function addToCart(productId) {
+    const p = allProducts.find(x => x.id===productId);
+    if (!p) return;
+    const qty = parseInt(document.getElementById('qty-'+productId)?.value)||1;
+    cart[productId] = { product:p, qty };
+    updateOrderBar();
+    applyFilters();
+  }
+
+  function askPrice(productId) {
+    const p = allProducts.find(x => x.id===productId);
+    if (p) openWhatsApp('Hello! Please tell me the price of: ' + p.name_en);
+  }
+
+  function removeFromCart(productId) { delete cart[productId]; updateOrderBar(); renderCartItems(); applyFilters(); }
+  function clearCart() { cart = {}; updateOrderBar(); renderCartItems(); applyFilters(); }
+
+  function updateOrderBar() {
+    const items = Object.values(cart);
+    const totalQty = items.reduce((s,x) => s+x.qty, 0);
+    const totalPrice = items.reduce((s,x) => s+(x.product.show_price&&x.product.price ? x.product.price*x.qty : 0), 0);
+    document.getElementById('bar-count').textContent = totalQty;
+    document.getElementById('bar-total').textContent = totalPrice;
+    document.getElementById('order-bar').classList.toggle('visible', totalQty > 0);
+  }
+
+  function openCartModal() { renderCartItems(); document.getElementById('cart-overlay').classList.add('open'); document.getElementById('cart-modal').classList.add('open'); }
+  function closeCartModal() { document.getElementById('cart-overlay').classList.remove('open'); document.getElementById('cart-modal').classList.remove('open'); }
+
+  function renderCartItems() {
+    const items = Object.values(cart);
+    const total = items.reduce((s,x) => s+(x.product.show_price&&x.product.price ? x.product.price*x.qty : 0), 0);
+    document.getElementById('cart-total-display').textContent = total;
+    if (!items.length) { document.getElementById('cart-items').innerHTML = '<div class="cart-empty"><div class="e-icon">&#x1F6D2;</div><p>Order is empty</p></div>'; return; }
+    document.getElementById('cart-items').innerHTML = items.map(({product:p, qty}) => {
+      const img = p.image_url && p.image_url.startsWith('http') ? p.image_url : '';
+      const priceStr = p.show_price && p.price ? '&#8377;'+(p.price*qty)+' ('+qty+' &times; &#8377;'+p.price+')' : 'Ask for price';
+      return '<div class="cart-item">'
+        + (img ? '<img class="cart-item-img" src="'+img+'" alt="'+p.name_en+'" />' : '<div class="cart-item-img" style="background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:28px">&#x1F4E6;</div>')
+        + '<div class="cart-item-info"><div class="cart-item-name">'+p.name_en+'</div><div class="cart-item-price">'+priceStr+'</div>'
+        + '<div class="cart-item-qty-row"><button class="cart-qty-btn" onclick="changeQty(\'' + p.id + '\',-1)">&#8722;</button><span class="cart-qty-val">'+qty+'</span><button class="cart-qty-btn" onclick="changeQty(\'' + p.id + '\',1)">+</button></div>'
+        + '</div><button class="cart-remove" onclick="removeFromCart(\'' + p.id + '\')">&times;</button></div>';
+    }).join('');
+  }
+
+  function sendCartToWhatsApp() {
+    const items = Object.values(cart);
+    if (!items.length) { alert('Order is empty!'); return; }
+    let msg = 'Hello Azad Provision Store! \u{1F6D2} *My Order:*\n\n';
+    items.forEach((x,i) => {
+      const price = x.product.show_price && x.product.price
+        ? 'Rs.' + x.product.price + ' x ' + x.qty + ' = Rs.' + (x.product.price*x.qty)
+        : 'please quote price';
+      msg += (i+1) + '. ' + x.product.name_en + ' x ' + x.qty + '  (' + price + ')\n';
+    });
+    const known = items.reduce((s,x) => s+(x.product.show_price&&x.product.price ? x.product.price*x.qty : 0), 0);
+    if (known > 0) msg += '\n*Estimated: Rs.' + known + '*';
+    msg += '\n\nHome delivery, Cash on Delivery. \u{1F64F}';
+    openWhatsApp(msg);
+  }
+
+  init();
+</script>
+</body>
+</html>
