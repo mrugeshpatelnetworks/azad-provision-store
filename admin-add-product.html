@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase-client.js"></script>
+  <script src="supabase-client.js?v=3"></script>
   <script>window.REQUIRED_ROLE = 'admin';</script>
   <script src="auth-guard.js"></script>
   <style>
@@ -405,10 +405,4 @@
         return;
       }
 
-      showToast('✅ Product saved successfully! / ઉત્પાદન સેવ થયું!');
-      status.textContent = '';
-      setTimeout(() => window.location.href = 'admin-products.html', 1500);
-    }
-  </script>
-</body>
-</html>
+      showToast('✅ Product saved succe
