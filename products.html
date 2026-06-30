@@ -121,7 +121,7 @@
 <body>
 <div class="top-bar">
   <i class="fas fa-truck"></i> Home Delivery — Ambavadi &amp; nearby &nbsp;|&nbsp;
-  <i class="fas fa-phone"></i> +91 98765 43210 &nbsp;|&nbsp;
+  <i class="fas fa-phone"></i> +91 98245 45856 &nbsp;|&nbsp;
   <i class="fas fa-clock"></i> 7am - 10pm
 </div>
 <header>
@@ -230,18 +230,18 @@
   <a href="contact.html" style="color:#E65100">Contact</a>
 </div>
 <script>
-  const WHATSAPP_NUMBER = '919876543210';
+  const WHATSAPP_NUMBER = '919824545856';
   function openWhatsApp(msg) { window.open('https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(msg), '_blank'); }
 
   const SAMPLE_CATEGORIES = [
-    { id:'1', name_en:'Grains & Flour',  icon:'&#x1F33E;' },
-    { id:'3', name_en:'Oils & Ghee',     icon:'&#x1FAD9;' },
-    { id:'4', name_en:'Spices & Masala', icon:'&#x1F336;&#xFE0F;' },
-    { id:'5', name_en:'Snacks',          icon:'&#x1F37F;' },
-    { id:'6', name_en:'Beverages',       icon:'&#x1F9C3;' },
-    { id:'7', name_en:'Personal Care',   icon:'&#x1F9F4;' },
-    { id:'8', name_en:'Household',       icon:'&#x1F9F9;' },
-    { id:'9', name_en:'Packaged Food',   icon:'&#x1F4E6;' }
+    { id:'1', name_en:'Grains & Flour',  name_gu:'અનાજ અને લોટ',          icon:'&#x1F33E;' },
+    { id:'3', name_en:'Oils & Ghee',     name_gu:'તેલ અને ઘી',             icon:'&#x1FAD9;' },
+    { id:'4', name_en:'Spices & Masala', name_gu:'મસાલો',                  icon:'&#x1F336;&#xFE0F;' },
+    { id:'5', name_en:'Snacks',          name_gu:'નાસ્તો',                 icon:'&#x1F37F;' },
+    { id:'6', name_en:'Beverages',       name_gu:'પીણાં',                  icon:'&#x1F9C3;' },
+    { id:'7', name_en:'Personal Care',   name_gu:'સ્વચ્છતા',              icon:'&#x1F9F4;' },
+    { id:'8', name_en:'Household',       name_gu:'ઘરવખરી',                 icon:'&#x1F9F9;' },
+    { id:'9', name_en:'Packaged Food',   name_gu:'પૅકેજ ફૂડ',             icon:'&#x1F4E6;' }
   ];
 
   const SAMPLE_PRODUCTS = [
@@ -280,7 +280,7 @@
 
   function renderCategoryNav() {
     document.getElementById('cats-dropdown-nav').innerHTML = allCategories.map(c =>
-      '<a href="#" onclick="selectCat(\'' + c.id + '\');return false;">' + (c.icon||'&#x1F4E6;') + ' ' + c.name_en + '</a>'
+      '<a href="#" onclick="selectCat(\'' + c.id + '\');return false;">' + (c.icon||'&#x1F4E6;') + ' ' + (c.name_gu || c.name_en) + '</a>'
     ).join('');
   }
 
@@ -290,7 +290,7 @@
     document.getElementById('cat-list').innerHTML =
       '<li><a href="#" class="' + (activeCatId==='all'?'active':'') + '" onclick="selectCat(\'all\');return false;"><span>&#x1F3EA; All</span><span class="cat-count">' + allProducts.length + '</span></a></li>' +
       allCategories.filter(c => counts[c.id]).map(c =>
-        '<li><a href="#" class="' + (activeCatId===c.id?'active':'') + '" onclick="selectCat(\'' + c.id + '\');return false;"><span>' + (c.icon||'') + ' ' + c.name_en + '</span><span class="cat-count">' + (counts[c.id]||0) + '</span></a></li>'
+        '<li><a href="#" class="' + (activeCatId===c.id?'active':'') + '" onclick="selectCat(\'' + c.id + '\');return false;"><span>' + (c.icon||'') + ' ' + (c.name_gu || c.name_en) + '</span><span class="cat-count">' + (counts[c.id]||0) + '</span></a></li>'
       ).join('');
   }
 
@@ -335,7 +335,8 @@
         + '</div>'
         + '<div class="product-info">'
         + (catName ? '<div class="product-cat-tag">' + catName + '</div>' : '')
-        + '<div class="product-name">' + p.name_en + '</div>'
+        + '<div class="product-name">' + (p.name_gu || p.name_en) + '</div>'
+        + '<div class="product-name-en">' + p.name_en + '</div>'
         + '<div class="product-price">' + (p.show_price && p.price ? '&#8377;' + p.price : '<span style="font-size:12px;color:#888;font-weight:500">Ask for price</span>') + '</div>'
         + '<div class="qty-cart-row">'
         + '<div class="qty-wrap">'

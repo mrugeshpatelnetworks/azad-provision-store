@@ -12,7 +12,7 @@ const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // WhatsApp number (no + sign, with country code)
-const WHATSAPP_NUMBER = '919876543210'; // ⚠️ Update to real number
+const WHATSAPP_NUMBER = '919824545856'; // ⚠️ Update to real number
 
 // Open WhatsApp with a pre-filled message
 function openWhatsApp(message = 'Hello! I would like to place an order.') {
@@ -50,8 +50,4 @@ function showToast(message, type = 'success') {
   setTimeout(() => toast.remove(), 3500);
 }
 
-// Show "Loading..." inside a container while data fetches
-function showLoading(id) {
-  const el = document.getElementById(id);
-  if (el) el.innerHTML = '<p style="text-align:center;padding:40px;color:#888">Loading...</p>';
-}
+// Show "Loading..." inside a con
